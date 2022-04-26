@@ -5,7 +5,7 @@
 * Abraham García Del Corral 
 	* A01023356
 * Gerardo Ángeles
-	* [matricula]
+	* A01338190
 * Lorenzo Jácome Ceniceros
 	* A01026759
 
