@@ -16,6 +16,16 @@
         overflow: hidden; 
         }
 
+        @font-face {
+            font-family: pixelfont;
+            src: url(../fonts/pixelfont.ttf);
+        }
+
+        @font-face {
+            font-family: arcade;
+            src: url(../fonts/arcade.ttf);
+        }
+
         #test{
             margin: 0;
             position: absolute;
@@ -25,23 +35,161 @@
 
         #title-logo{
             position: absolute;
-            
-            right: auto;
-            left: 30%;
+            top: 90px;
+            left: 90px;
+
+            width: 400px;
             
         }
+
+        #start-button{
+            position: absolute;
+            top: 240px;
+            left: 175px;
+
+            width: 400px;
+
+            font-family: arcade;
+        }
+
+        #credits-button{
+            position: absolute;
+
+            top: 340px;
+            left: 175px;
+
+            width: 400px;
+
+            font-family: arcade;
+        }
+
+        #menu-background{
+            position: absolute;
+            background-color: rgba(92, 38, 134, 0.5);
+            width: 400px;
+            height: 400px;
+
+            border-style: solid;
+            border-color: #36CDC4;
+            border-radius: 20px;
+
+            top: 70px;
+            left: 95px;
+
+            box-shadow: 0px 0px 20px 1px #0ff;
+        }
+
+        #leader-background{
+            position: absolute;
+            background-color: rgba(92, 38, 134, 0.5);
+            width: 800px;
+            height: 400px;
+
+            border-style: solid;
+            border-color: #36CDC4;
+            border-radius: 20px;
+
+            top: 70px;
+            left: 1000px;
+
+            box-shadow: 0px 0px 20px 1px #0ff;
+        }
+
+        #leader-title{
+            position: absolute;
+
+            top: 60px;
+            left: 1040px;
+
+            width: 400px;
+
+            font-family: pixelfont;
+
+            color: #F2E068;
+        }
+
+        #main-menu{
+            
+        }
+
+        #leader-description-name{
+            position: absolute;
+
+            top: 110px;
+            left: 1040px;
+
+            width: 400px;
+
+            font-family: pixelfont;
+            
+        }
+
+        #leader-description-points{
+            position: absolute;
+
+            top: 110px;
+            left: 1350px;
+
+            width: 400px;
+
+            font-family: pixelfont;
+        }
+
+        #player-list{
+            position: absolute;
+            font-family: arcade;
+            font-size: 24px;
+
+            top: 180px;
+            left: 1000px;
+
+            list-style-type: none;
+        }
+
+        #points-list {
+            position: absolute;
+            font-family: arcade;
+            font-size: 24px;
+
+            top: 180px;
+            left: 1300px;
+
+            list-style-type: none;
+        }
+
+        a { color: white; }
+        a:hover { color: #FF1690; }
+        .nav a { color:green; }
         
     </style>
 
     </head>
 
     <body>
-        <div>
+        <div id="main-menu">
+            <div id="menu-background"></div>
             <img id="title-logo" src="../images/UI/3DASTEROIDS_LOGO.png" alt="Logo">
+            <a href="/scenes/gameScene.html"><h1 id="start-button">START</h1></a>
+            <a href=""><h2 id="credits-button">CREDITS</h2></a>
         </div>
+        
+        <div id="leaderboard">
+            <div id="leader-background"></div>
+            <h3 id="leader-title">Leaderboard:</h3>
+            <h5 id="leader-description-name">NAME</h5>
+            <h5 id="leader-description-points">POINTS</h5>
 
-        <div>
-            <h1 id="test">START</h1>
+            <ul id="player-list">
+                <li>Abraham</li>
+                <li>Gerardo</li>
+                <li>Lorenzo</li>
+            </ul>
+
+            <ul id="points-list">
+                <li>320,666</li>
+                <li>117,343</li>
+                <li>69,420</li>
+            </ul>
         </div>
         
         <div id="container">
