@@ -9,13 +9,12 @@ import { OBJLoader } from '../libs/three.js/loaders/OBJLoader.js'
 
 // depende lo desarrollado, eliminar el orbitControls
 let renderer = null, scene = null, camera = null, orbitControls = null;
-let spaceShip = null, laser = null;
+let spaceShip = null, laser = null, score = 0;
 let asteroideGArray = {};
 
 // para el control de la velocidad del movimiento de la nave
 let xSpeed = 2;
 let ySpeed = 2;
-let yRotation = 0.2;
 
 // control de vidas
 let lifesCounter = 3;
