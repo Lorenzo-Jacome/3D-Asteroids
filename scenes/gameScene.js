@@ -9,12 +9,13 @@ import { OBJLoader } from '../libs/three.js/loaders/OBJLoader.js'
 
 // depende lo desarrollado, eliminar el orbitControls
 let renderer = null, scene = null, camera = null, orbitControls = null;
-let spaceShip = null, laser = null, score = 0;
+let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
 let asteroideGArray = {};
 
 // para el control de la velocidad del movimiento de la nave
-let xSpeed = 2;
-let ySpeed = 2;
+let xSpeed = 1;
+let ySpeed = 1;
+let zSpeed = 1;
 
 // control de vidas
 let lifesCounter = 3;
@@ -81,7 +82,7 @@ async function loadFBX(fbxModelUrl, configuration)
         setVectorValue(spaceShip.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1));
         setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0,0,0));
         
-        scene.add( spaceShip );
+        shipGroup.add(spaceShip)
     }
     catch(err)
     {
@@ -130,7 +131,7 @@ function update()
     animate();
 
     // Update the camera controller, probablemente se elimine
-    orbitControls.update();
+    //orbitControls.update();
 
     //mostrar o eliminar los coreazones de vida
     switch (lifesCounter) {
@@ -156,11 +157,10 @@ function endGame(){
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 function loadObjects () {
-    load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -200), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
-    load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -200), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
-    load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -200), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
-    loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(1.5, 3.18, 0)})
-  
+    load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+    load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
+    load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
+    loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
 }
 
 // funcion de prueba para crear asteroidesG, no jalo, preguntar
@@ -181,12 +181,24 @@ function createScene(canvas)
     scene = new THREE.Scene();
     scene.background = new THREE.TextureLoader().load(spaceMapUrl)
 
+    loadObjects();
+
+    shipGroup = new THREE.Object3D;
+    scene.add( shipGroup )
+
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 700 );
-    camera.position.set(0.01, 0.01, 1);
-    scene.add(camera);
+    camera.position.set(0.01, -0.2, 1);
+
+    
+    cameraGroup = new THREE.Object3D;
+    cameraGroup.position.set(0.01, 10, 1);
+    camera.lookAt(0, 0, 0)
+    cameraGroup.add(camera) 
+
+    shipGroup.add(cameraGroup)
 
     //eliminar en algun momento
-    orbitControls = new OrbitControls(camera, renderer.domElement);
+    //orbitControls = new OrbitControls(camera, renderer.domElement);
 
     ambientLight = new THREE.AmbientLight ( 0xffffff, 10);
 
@@ -199,8 +211,6 @@ function main()
     const canvas = document.getElementById("webGLCanvas");
 
     createScene(canvas);
-
-    loadObjects();
 
     update();
 }
@@ -230,13 +240,19 @@ document.addEventListener("keydown", onDocumentKeyDown, false);
 
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
-    if (keyCode == 38) {
-        spaceShip.position.y += ySpeed;
-    } else if (keyCode == 40) {
-        spaceShip.position.y -= ySpeed;
-    } else if (keyCode == 37) {
-        spaceShip.position.x -= xSpeed;
-    } else if (keyCode == 39) {
-        spaceShip.position.x += xSpeed;
+    //w, hacia delante
+    if (keyCode == 38 || keyCode == 87) {
+        shipGroup.position.z -= ySpeed;
+    //S, hacia abajo
+    } else if (keyCode == 40 || keyCode == 83) {
+        shipGroup.position.z += ySpeed;
+    //A, izquierda
+    } else if (keyCode == 65 || keyCode == 37) {
+        //shipGroup.position.x -= xSpeed;
+        shipGroup.rotation.z += 0.1;
+    //D, derecha
+    } else if (keyCode == 39 || keyCode == 68) {
+        //shipGroup.position.x += xSpeed;
+        shipGroup.rotation.z -= 0.1;
     }
 };
