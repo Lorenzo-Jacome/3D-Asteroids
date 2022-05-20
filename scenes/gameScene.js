@@ -15,7 +15,7 @@ let asteroideGArray = {};
 // para el control de la velocidad del movimiento de la nave
 let xSpeed = 2;
 let ySpeed = 2;
-
+let animation = null
 // control de vidas
 let lifesCounter = 3;
 
@@ -36,7 +36,7 @@ const asteroideG = {
   }
 
 let ambientLight = null;
-
+const mixer = {}
 let currentTime = Date.now();
 
 //cargamos background
@@ -76,12 +76,18 @@ async function loadFBX(fbxModelUrl, configuration)
 {
     try{
         spaceShip = await new FBXLoader().loadAsync(fbxModelUrl);
-
         setVectorValue(spaceShip.position, configuration, 'position', new THREE.Vector3(0,0,0));
         setVectorValue(spaceShip.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1));
         setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0,0,0));
         
         scene.add( spaceShip );
+        spaceShip.animations.forEach(element =>{
+            mixer[element.name] = new THREE.AnimationMixer(scene).clipAction(element, spaceShip)
+        })
+        animation = 'Intergalactic Spaceship|CircleAction.004'
+        mixer[animation].play();
+        console.log(mixer[animation])
+        // console.log(mixer)
     }
     catch(err)
     {
@@ -114,11 +120,15 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     }
   }
 
-function animate()
-{
-    const now = Date.now();
-    const deltat = now - currentTime;
-    currentTime = now;
+  function animate () {
+    const now = Date.now()
+    const deltat = now - currentTime
+    currentTime = now
+  
+    if (mixer[animation] && spaceShip) {
+      // mixer.update(deltat * 0.001)
+      mixer[animation].getMixer().update(deltat * 0.00002)
+    }
 }
 
 function update() 
