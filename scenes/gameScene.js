@@ -21,6 +21,9 @@ let zSpeed = 1;
 // control de vidas
 let lifesCounter = 3;
 
+//Crear mouse:
+let mouse = new THREE.Vector2();
+
 //para crear asteroides
 const asteroideG = {
     obj: '../models/obj/asteroid/Asteroid_1_LOW_MODEL_.obj',
@@ -143,6 +146,17 @@ function update()
         default:
             break;
     }
+
+    if(mouse.x > 0.1 || mouse.x < -0.1){
+        //console.log(mouse.x);
+        shipGroup.rotation.y -= (mouse.x / 20);
+    }
+
+    if(mouse.y > 0.1 || mouse.y < -0.1){
+        //console.log(mouse.x);
+        shipGroup.rotation.x += (mouse.y / 20);
+    }
+    
 }
 
 // funcion de terminar el juego
@@ -199,7 +213,8 @@ function createScene(canvas)
 
     scene.add( ambientLight );
 
-
+    //MOUSE TEST:
+    document.addEventListener('pointermove', onDocumentPointerDown);
 }
 
 function main()
@@ -252,3 +267,11 @@ function onDocumentKeyDown(event) {
         shipGroup.rotation.z -= 0.1;
     }
 };
+
+const onDocumentPointerDown = (event) =>{
+    event.preventDefault();
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    //console.log(mouse.x);
+}
