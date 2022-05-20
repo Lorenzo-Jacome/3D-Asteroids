@@ -10,6 +10,7 @@ import { OBJLoader } from '../libs/three.js/loaders/OBJLoader.js'
 // depende lo desarrollado, eliminar el orbitControls
 let renderer = null, scene = null, camera = null, orbitControls = null;
 let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
+let animation = null;
 let asteroideGArray = {};
 
 // para el control de la velocidad del movimiento de la nave
@@ -43,16 +44,7 @@ let currentTime = Date.now();
 //cargamos background
 const spaceMapUrl = "../images/space2.jpeg"
 
-function onError ( err ){ console.error( err ); };
 
-function onProgress( xhr ) {
-
-    if ( xhr.lengthComputable ) {
-
-        const percentComplete = xhr.loaded / xhr.total * 100;
-        console.log( xhr.target.responseURL, Math.round( percentComplete, 2 ) + '% downloaded' );
-    }
-}
 
 // para cargar objetos en la escena
 // obtenido del ejemplo del profe
@@ -94,14 +86,14 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     try {
       const mtlLoader = new MTLLoader()
   
-      const materials = await mtlLoader.loadAsync(mtlModelUrl, onProgress, onError)
+      const materials = await mtlLoader.loadAsync(mtlModelUrl)
   
       materials.preload()
   
       const objLoader = new OBJLoader()
       objLoader.setMaterials(materials)
   
-      const object = await objLoader.loadAsync(objModelUrl, onProgress, onError)
+      const object = await objLoader.loadAsync(objModelUrl)
   
       setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
       setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
@@ -206,6 +198,7 @@ function createScene(canvas)
     ambientLight = new THREE.AmbientLight ( 0xffffff, 10);
 
     scene.add( ambientLight );
+
 
 }
 
