@@ -158,10 +158,12 @@ async function loadGLTF (gltfModelUrl, configuration) {
       console.log(object)
   
       console.log(result)
-  
-    //   setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 10))
-    //   setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
-    //   setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+      object.rotation.set(0, 0, Math.PI )
+      object.scale.set(0.09, 0.09, 0.09)
+      object.position.set(0, -200, 0)
+       //setVectorValue(object.position, configuration, 'position')
+       //setVectorValue(object.scale, configuration, 'scale')
+       //setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
   
       updateTextureEncoding(object)
       scene.add(object)
@@ -208,6 +210,7 @@ function update()
         shipGroup.rotation.x += (mouse.y / 20);
     }
     
+  orbitControls.update()
 }
 
 // funcion de terminar el juego
@@ -217,11 +220,11 @@ function endGame(){
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 function loadObjects () {
-    // load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
-    // load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
-    // load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
+     load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+     load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
+     load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
     // loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
-    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(.2, .2, .2) })
+    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(10, 10, 10) })
 
 }
 
@@ -249,22 +252,18 @@ function createScene(canvas)
   
   
 
-    loadObjects();
-
-    shipGroup = new THREE.Object3D;
-    scene.add( shipGroup )
 
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 700 );
-    camera.position.set(0.01, -0.2, 1);
+    camera.position.set(0.01, 1, 1);
 
     
     cameraGroup = new THREE.Object3D;
-    cameraGroup.position.set(0.01, 10, 1);
+    cameraGroup.position.set(0.01, 10, 2);
     camera.lookAt(0, 0, 0)
     cameraGroup.add(camera) 
 
-    shipGroup.add(cameraGroup)
 
+    orbitControls = new OrbitControls(camera, renderer.domElement)
     //eliminar en algun momento
     //orbitControls = new OrbitControls(camera, renderer.domElement);
 
@@ -272,6 +271,11 @@ function createScene(canvas)
 
     scene.add( ambientLight );
 
+    loadObjects();
+
+    shipGroup = new THREE.Object3D;
+    //shipGroup.add(cameraGroup)
+    scene.add( shipGroup )
     //MOUSE TEST:
     document.addEventListener('pointermove', onDocumentPointerDown);
 }
