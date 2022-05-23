@@ -1,16 +1,25 @@
 //12 de mayo
 //documento de javascript con el funcionamiento de la escena de juego
+import * as THREE from '../../libs/three.js/three.module.js'
+import { OrbitControls } from '../../libs/three.js/controls/OrbitControls.js'
+import { OBJLoader } from '../../libs/three.js/loaders/OBJLoader.js'
+import { MTLLoader } from '../../libs/three.js/loaders/MTLLoader.js'
+import { FBXLoader } from '../../libs/three.js/loaders/FBXLoader.js'
+import { GLTFLoader } from '../../libs/three.js/loaders/GLTFLoader.js'
+import { KTX2Loader } from '../../libs/three.js/loaders/KTX2Loader.js'
+import { DRACOLoader } from '../../libs/three.js/loaders/DRACOLoader.js'
+import { MeshoptDecoder } from '../../libs/three.js/libs/meshopt_decoder.module.js'
 
-import * as THREE from '../libs/three.module.js'
-import { OrbitControls } from '../libs/three.js/controls/OrbitControls.js';
-import {FBXLoader} from '../libs/three.js/loaders/FBXLoader.js'
-import { MTLLoader } from '../libs/three.js/loaders/MTLLoader.js';
-import { OBJLoader } from '../libs/three.js/loaders/OBJLoader.js'
+const MANAGER = new THREE.LoadingManager()
+const DRACO_LOADER = new DRACOLoader(MANAGER).setDecoderPath('../../libs/three.js/libs/draco/gltf')
+const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.js/libs/basis/')
 
 // depende lo desarrollado, eliminar el orbitControls
 let renderer = null, scene = null, camera = null, orbitControls = null;
 let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
 let asteroideGArray = {};
+const textureEncoding = 'sRGB'
+const stars = '../images/stars.jpg'
 
 // para el control de la velocidad del movimiento de la nave
 let xSpeed = 1;
@@ -50,7 +59,7 @@ function onProgress( xhr ) {
     if ( xhr.lengthComputable ) {
 
         const percentComplete = xhr.loaded / xhr.total * 100;
-        console.log( xhr.target.responseURL, Math.round( percentComplete, 2 ) + '% downloaded' );
+        // console.log( xhr.target.responseURL, Math.round( percentComplete, 2 ) + '% downloaded' );
     }
 }
 
@@ -119,11 +128,53 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     const deltat = now - currentTime
     currentTime = now
   
-    if (mixer[animation] && spaceShip) {
-      // mixer.update(deltat * 0.001)
-      mixer[animation].getMixer().update(deltat * 0.00002)
-    }
+    // if (mixer[animation] && spaceShip) {
+    //   // mixer.update(deltat * 0.001)
+    //   mixer[animation].getMixer().update(TextureEndeltat * 0.00002)
+    // }
 }
+function updateTextureEncoding (object) {
+    const encoding = textureEncoding === 'sRGB'
+      ? THREE.sRGBEncoding
+      : THREE.LinearEncoding
+    traverseMaterials(object, (material) => {
+      if (material.map) material.map.encoding = encoding
+      if (material.emissiveMap) material.emissiveMap.encoding = encoding
+      if (material.map || material.emissiveMap) material.needsUpdate = true
+    })
+  }
+  
+  function traverseMaterials (object, callback) {
+    object.traverse((node) => {
+      if (!node.isMesh) return
+      const materials = Array.isArray(node.material)
+        ? node.material
+        : [node.material]
+      materials.forEach(callback)
+    })
+  }
+async function loadGLTF (gltfModelUrl, configuration) {
+    try {
+      const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
+      const result = await gltfLoader.loadAsync(gltfModelUrl)
+  
+      let object = result.scene || result.scenes[0]
+      object = object.children[0]
+      console.log(object)
+  
+      console.log(result)
+  
+    //   setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 10))
+    //   setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
+    //   setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+  
+      updateTextureEncoding(object)
+      scene.add(object)
+  
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
 function update() 
 {
@@ -160,13 +211,15 @@ function endGame(){
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 function loadObjects () {
-    load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
-    load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
-    load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
-    loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
+    // load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+    // load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
+    // load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
+    // loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
+    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(.2, .2, .2) })
+
 }
 
-// funcion de prueba para crear asteroidesG, no jalo, preguntar
+// funcion de prueba para crear asteroidesG, no jalo, preguntar20
 function create_asteroideG(){
     asteroideGArray[0] = load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(1,1,1), rotation: new THREE.Vector3(0, 0, 0) })
     scene.add(asteroideGArray[0]);
@@ -182,7 +235,13 @@ function createScene(canvas)
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     scene = new THREE.Scene();
-    scene.background = new THREE.TextureLoader().load(spaceMapUrl)
+    // scene.background = new THREE.TextureLoader().load(spaceMapUrl)
+    let map = new THREE.TextureLoader().load(stars)
+    map.wrapS = map.wrapT = THREE.RepeatWrapping
+    map.repeat.set(1, 1)
+    scene.background = map
+  
+  
 
     loadObjects();
 
