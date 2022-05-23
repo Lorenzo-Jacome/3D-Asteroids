@@ -17,6 +17,7 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.
 // depende lo desarrollado, eliminar el orbitControls
 let renderer = null, scene = null, camera = null, orbitControls = null;
 let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
+let animation = null;
 let asteroideGArray = {};
 const textureEncoding = 'sRGB'
 const stars = '../images/stars.jpg'
@@ -28,6 +29,9 @@ let zSpeed = 1;
 
 // control de vidas
 let lifesCounter = 3;
+
+//Crear mouse:
+let mouse = new THREE.Vector2();
 
 //para crear asteroides
 const asteroideG = {
@@ -52,16 +56,7 @@ let currentTime = Date.now();
 //cargamos background
 const spaceMapUrl = "../images/space2.jpeg"
 
-function onError ( err ){ console.error( err ); };
 
-function onProgress( xhr ) {
-
-    if ( xhr.lengthComputable ) {
-
-        const percentComplete = xhr.loaded / xhr.total * 100;
-        // console.log( xhr.target.responseURL, Math.round( percentComplete, 2 ) + '% downloaded' );
-    }
-}
 
 // para cargar objetos en la escena
 // obtenido del ejemplo del profe
@@ -103,14 +98,14 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     try {
       const mtlLoader = new MTLLoader()
   
-      const materials = await mtlLoader.loadAsync(mtlModelUrl, onProgress, onError)
+      const materials = await mtlLoader.loadAsync(mtlModelUrl)
   
       materials.preload()
   
       const objLoader = new OBJLoader()
       objLoader.setMaterials(materials)
   
-      const object = await objLoader.loadAsync(objModelUrl, onProgress, onError)
+      const object = await objLoader.loadAsync(objModelUrl)
   
       setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
       setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
@@ -202,6 +197,17 @@ function update()
         default:
             break;
     }
+
+    if(mouse.x > 0.1 || mouse.x < -0.1){
+        //console.log(mouse.x);
+        shipGroup.rotation.y -= (mouse.x / 20);
+    }
+
+    if(mouse.y > 0.1 || mouse.y < -0.1){
+        //console.log(mouse.x);
+        shipGroup.rotation.x += (mouse.y / 20);
+    }
+    
 }
 
 // funcion de terminar el juego
@@ -266,6 +272,8 @@ function createScene(canvas)
 
     scene.add( ambientLight );
 
+    //MOUSE TEST:
+    document.addEventListener('pointermove', onDocumentPointerDown);
 }
 
 function main()
@@ -318,3 +326,11 @@ function onDocumentKeyDown(event) {
         shipGroup.rotation.z -= 0.1;
     }
 };
+
+const onDocumentPointerDown = (event) =>{
+    event.preventDefault();
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    //console.log(mouse.x);
+}
