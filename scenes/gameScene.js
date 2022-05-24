@@ -179,9 +179,9 @@ function update()
 
     animate();
 
-    console.log(shipGroup.position.x)
-    console.log(shipGroup.position.y)
-    console.log(shipGroup.position.z)
+    console.log("posicion en x: "+shipGroup.rotation.x)
+    console.log("posicion en y: "+shipGroup.rotation.y)
+    console.log("posicion en z: "+shipGroup.rotation.z)
 
     // Update the camera controller, probablemente se elimine
     //orbitControls.update();
@@ -225,7 +225,7 @@ function loadObjects () {
      load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
     // loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
-    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
+    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
 
 }
 
@@ -253,7 +253,7 @@ function createScene(canvas)
 
 
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 700 );
-    camera.position.set(0.01, 1, 1);
+    camera.position.set(0.01, 1, 30);
 
     
     cameraGroup = new THREE.Object3D;
