@@ -93,6 +93,28 @@ async function loadFBX(fbxModelUrl, configuration)
     }
 }
 
+async function loadGLTF (gltfModelUrl, configuration) {
+  try {
+    const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
+    const result = await gltfLoader.loadAsync(gltfModelUrl)
+
+    let object = result.scene || result.scenes[0]
+    object = object.children[0]
+    console.log(object)
+
+    console.log(result)
+     setVectorValue(object.position, configuration, 'position')
+     setVectorValue(object.scale, configuration, 'scale')
+     setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+
+    updateTextureEncoding(object)
+    shipGroup.add(object)
+
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 // esta es para cargar los asteroides, se obtuvo del ejemplo del profe
 async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     try {
@@ -122,11 +144,11 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     const now = Date.now()
     const deltat = now - currentTime
     currentTime = now
-  
-    // if (mixer[animation] && spaceShip) {
-    //   // mixer.update(deltat * 0.001)
-    //   mixer[animation].getMixer().update(TextureEndeltat * 0.00002)
-    // }
+
+    if (mixer[animation] && spaceShip) {
+     mixer.update(deltat * 0.001)
+     mixer[animation].getMixer().update(TextureEndeltat * 0.00002)
+    }
 }
 function updateTextureEncoding (object) {
     const encoding = textureEncoding === 'sRGB'
@@ -148,30 +170,6 @@ function updateTextureEncoding (object) {
       materials.forEach(callback)
     })
   }
-async function loadGLTF (gltfModelUrl, configuration) {
-    try {
-      const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
-      const result = await gltfLoader.loadAsync(gltfModelUrl)
-  
-      let object = result.scene || result.scenes[0]
-      object = object.children[0]
-      console.log(object)
-  
-      console.log(result)
-      object.rotation.set(0, 0, Math.PI )
-      object.scale.set(0.09, 0.09, 0.09)
-      object.position.set(0, -200, 0)
-       //setVectorValue(object.position, configuration, 'position')
-       //setVectorValue(object.scale, configuration, 'scale')
-       //setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
-  
-      updateTextureEncoding(object)
-      scene.add(object)
-  
-    } catch (err) {
-      console.error(err)
-    }
-  }
 
 function update() 
 {
@@ -180,6 +178,10 @@ function update()
     renderer.render( scene, camera );
 
     animate();
+
+    console.log(shipGroup.position.x)
+    console.log(shipGroup.position.y)
+    console.log(shipGroup.position.z)
 
     // Update the camera controller, probablemente se elimine
     //orbitControls.update();
@@ -201,16 +203,15 @@ function update()
     }
 
     if(mouse.x > 0.1 || mouse.x < -0.1){
-        //console.log(mouse.x);
-        shipGroup.rotation.y -= (mouse.x / 20);
-    }
+      //console.log(mouse.x);
+      shipGroup.rotation.y -= (mouse.x / 50);
+  }
 
-    if(mouse.y > 0.1 || mouse.y < -0.1){
-        //console.log(mouse.x);
-        shipGroup.rotation.x += (mouse.y / 20);
-    }
+  if(mouse.y > 0.1 || mouse.y < -0.1){
+      //console.log(mouse.x);
+      shipGroup.rotation.x += (mouse.y / 50);
+  }
     
-  orbitControls.update()
 }
 
 // funcion de terminar el juego
@@ -224,7 +225,7 @@ function loadObjects () {
      load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
     // loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
-    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(10, 10, 10) })
+    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
 
 }
 
@@ -244,13 +245,11 @@ function createScene(canvas)
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     scene = new THREE.Scene();
-    // scene.background = new THREE.TextureLoader().load(spaceMapUrl)
+    scene.background = new THREE.TextureLoader().load(spaceMapUrl)
     let map = new THREE.TextureLoader().load(stars)
     map.wrapS = map.wrapT = THREE.RepeatWrapping
     map.repeat.set(1, 1)
     scene.background = map
-  
-  
 
 
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 700 );
@@ -259,23 +258,23 @@ function createScene(canvas)
     
     cameraGroup = new THREE.Object3D;
     cameraGroup.position.set(0.01, 10, 2);
-    camera.lookAt(0, 0, 0)
+    //camera.lookAt(0, 0, 0)
     cameraGroup.add(camera) 
 
 
-    orbitControls = new OrbitControls(camera, renderer.domElement)
+    //orbitControls = new OrbitControls(camera, renderer.domElement)
     //eliminar en algun momento
-    //orbitControls = new OrbitControls(camera, renderer.domElement);
 
     ambientLight = new THREE.AmbientLight ( 0xffffff, 10);
 
     scene.add( ambientLight );
 
+    shipGroup = new THREE.Object3D;
+    shipGroup.add(cameraGroup)
+    scene.add( shipGroup )
+
     loadObjects();
 
-    shipGroup = new THREE.Object3D;
-    //shipGroup.add(cameraGroup)
-    scene.add( shipGroup )
     //MOUSE TEST:
     document.addEventListener('pointermove', onDocumentPointerDown);
 }
