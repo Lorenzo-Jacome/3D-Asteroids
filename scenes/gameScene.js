@@ -17,15 +17,15 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.
 // depende lo desarrollado, eliminar el orbitControls
 let renderer = null, scene = null, camera = null, orbitControls = null;
 let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
-let animation = null;
+let animation = null, bullet = [], bulletBase = null;
 let asteroideGArray = {};
 const textureEncoding = 'sRGB'
 const stars = '../images/stars.jpg'
 
 // para el control de la velocidad del movimiento de la nave
-let xSpeed = 1;
-let ySpeed = 1;
-let zSpeed = 1;
+let xSpeed = 2;
+let ySpeed = 2;
+let zSpeed = 2;
 
 // control de vidas
 let lifesCounter = 3;
@@ -66,7 +66,7 @@ function setVectorValue(vector, configuration, property, initialValues)
     {
         if(property in configuration)
         {
-            console.log("setting:", property, "with", configuration[property]);
+            //console.log("setting:", property, "with", configuration[property]);
             vector.set(configuration[property].x, configuration[property].y, configuration[property].z);
             return;
         }
@@ -79,13 +79,15 @@ function setVectorValue(vector, configuration, property, initialValues)
 // solo funciona para la nave espacial ya que lo guardamos en spaceShip
 async function loadFBX(fbxModelUrl, configuration)
 {
+  console.log("imprimiendo en consola ahora")
+  console.log(fbxModelUrl)
     try{
-        spaceShip = await new FBXLoader().loadAsync(fbxModelUrl);
-        setVectorValue(spaceShip.position, configuration, 'position', new THREE.Vector3(0,0,0));
-        setVectorValue(spaceShip.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1));
-        setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0,0,0));
+        let object = await new FBXLoader().loadAsync(fbxModelUrl);
+        setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0,0,0));
+        setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1));
+        setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0,0,0));
         
-        shipGroup.add(spaceShip)
+        scene.add(object)
     }
     catch(err)
     {
@@ -98,17 +100,39 @@ async function loadGLTF (gltfModelUrl, configuration) {
     const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
     const result = await gltfLoader.loadAsync(gltfModelUrl)
 
-    let object = result.scene || result.scenes[0]
-    object = object.children[0]
-    console.log(object)
+    spaceShip = result.scene || result.scenes[0]
+    spaceShip = spaceShip.children[0]
+    //console.log(object)
 
-    console.log(result)
-     setVectorValue(object.position, configuration, 'position')
-     setVectorValue(object.scale, configuration, 'scale')
-     setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+    //console.log(result)
+     setVectorValue(spaceShip.position, configuration, 'position')
+     setVectorValue(spaceShip.scale, configuration, 'scale')
+     setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
 
-    updateTextureEncoding(object)
-    shipGroup.add(object)
+    updateTextureEncoding(spaceShip)
+    shipGroup.add(spaceShip)
+
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+async function loadGLTFBullet (gltfModelUrl, configuration) {
+  try {
+    const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
+    const result = await gltfLoader.loadAsync(gltfModelUrl)
+
+    bulletBase = result.scene || result.scenes[0]
+    bulletBase = bulletBase.children[0]
+
+    //console.log(result)
+     setVectorValue(bulletBase.position, configuration, 'position')
+     setVectorValue(bulletBase.scale, configuration, 'scale')
+     setVectorValue(bulletBase.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+
+    updateTextureEncoding(bulletBase)
+
+    //scene.add(bulletBase)
 
   } catch (err) {
     console.error(err)
@@ -179,9 +203,9 @@ function update()
 
     animate();
 
-    console.log("posicion en x: "+shipGroup.rotation.x)
-    console.log("posicion en y: "+shipGroup.rotation.y)
-    console.log("posicion en z: "+shipGroup.rotation.z)
+    //console.log("posicion en x: "+shipGroup.rotation.x)
+    //console.log("posicion en y: "+shipGroup.rotation.y)
+    //console.log("posicion en z: "+shipGroup.rotation.z)
 
     // Update the camera controller, probablemente se elimine
     //orbitControls.update();
@@ -204,12 +228,12 @@ function update()
 
     if(mouse.x > 0.1 || mouse.x < -0.1){
       //console.log(mouse.x);
-      shipGroup.rotation.y -= (mouse.x / 50);
+      shipGroup.rotation.y -= (mouse.x / 80);
   }
 
   if(mouse.y > 0.1 || mouse.y < -0.1){
       //console.log(mouse.x);
-      shipGroup.rotation.x += (mouse.y / 50);
+      shipGroup.rotation.x += (mouse.y / 80);
   }
     
 }
@@ -224,8 +248,8 @@ function loadObjects () {
      load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
      load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
-    // loadFBX('../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3(0, (Math.PI * 1), 0)})
-    loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
+     loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 10, -150), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
+     loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
 
 }
 
@@ -244,16 +268,23 @@ function createScene(canvas)
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+    //creamos texturas de skybox
     scene = new THREE.Scene();
-    scene.background = new THREE.TextureLoader().load(spaceMapUrl)
-    let map = new THREE.TextureLoader().load(stars)
-    map.wrapS = map.wrapT = THREE.RepeatWrapping
-    map.repeat.set(1, 1)
-    scene.background = map
+    const loader = new THREE.CubeTextureLoader();
+    const texture = loader.load ([
+      '../images/cubemap/opcion1/rightImage.png',
+      '../images/cubemap/opcion1/leftImage.png',
+      '../images/cubemap/opcion1/upImage.png',
+      '../images/cubemap/opcion1/downImage.png',
+      '../images/cubemap/opcion1/backImage.png',
+      '../images/cubemap/opcion1/frontImage.png',
+    ]);
+
+    scene.background = texture;
 
 
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 700 );
-    camera.position.set(0.01, 1, 30);
+    camera.position.set(0.01, 20, 30);
 
     
     cameraGroup = new THREE.Object3D;
@@ -311,6 +342,22 @@ window.addEventListener('resize', resize, false);
 // para controlar el movimiento de la nave espacial
 document.addEventListener("keydown", onDocumentKeyDown, false);
 
+//lanzar balas, falta arreglar el tema de la direccion de las balas
+function throwBullet(){
+  let bulletNew = bulletBase.clone();
+  bulletNew.name = bullet.length;
+  bulletNew.position.set(shipGroup.position.x, shipGroup.position.y+5, shipGroup.position.z-100);
+  bulletNew.rotation.set(shipGroup.rotation.x, shipGroup.rotation.y, shipGroup.rotation.z)
+  bullet.push(bulletNew)
+  scene.add(bulletNew)
+  console.log("posicion en x shipGroup: "+shipGroup.position.x)
+  console.log("posicion en y shipGroup: "+shipGroup.position.y)
+  console.log("posicion en z shipGroup: "+shipGroup.position.z)
+  console.log("posicion en x spaceShip: "+spaceShip.position.x)
+  console.log("posicion en y spaceShip: "+spaceShip.position.y)
+  console.log("posicion en z spaceShip: "+spaceShip.position.z)
+}
+
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
     //w, hacia delante
@@ -327,6 +374,8 @@ function onDocumentKeyDown(event) {
     } else if (keyCode == 39 || keyCode == 68) {
         //shipGroup.position.x += xSpeed;
         shipGroup.rotation.z -= 0.1;
+    } else if (keyCode == 32){
+      throwBullet()
     }
 };
 
@@ -335,5 +384,5 @@ const onDocumentPointerDown = (event) =>{
     mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
     mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-    //console.log(mouse.x);
+    //console.log(mouse.x); 
 }
