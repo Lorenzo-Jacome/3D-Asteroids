@@ -226,7 +226,7 @@ function update()
             break;
     }
 
-    if(mouse.x > 0.1 || mouse.x < -0.1){
+  if(mouse.x > 0.1 || mouse.x < -0.1){
       //console.log(mouse.x);
       shipGroup.rotation.y -= (mouse.x / 80);
   }
@@ -350,22 +350,22 @@ function throwBullet(){
   bulletNew.rotation.set(shipGroup.rotation.x, shipGroup.rotation.y, shipGroup.rotation.z)
   bullet.push(bulletNew)
   scene.add(bulletNew)
-  console.log("posicion en x shipGroup: "+shipGroup.position.x)
-  console.log("posicion en y shipGroup: "+shipGroup.position.y)
-  console.log("posicion en z shipGroup: "+shipGroup.position.z)
-  console.log("posicion en x spaceShip: "+spaceShip.position.x)
-  console.log("posicion en y spaceShip: "+spaceShip.position.y)
-  console.log("posicion en z spaceShip: "+spaceShip.position.z)
+  //console.log("posicion en x shipGroup: "+shipGroup.position.x)
+  //console.log("posicion en y shipGroup: "+shipGroup.position.y)
+  //console.log("posicion en z shipGroup: "+shipGroup.position.z)
+  //console.log("posicion en x spaceShip: "+spaceShip.position.x)
+  //console.log("posicion en y spaceShip: "+spaceShip.position.y)
+  //console.log("posicion en z spaceShip: "+spaceShip.position.z)
 }
 
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
     //w, hacia delante
     if (keyCode == 38 || keyCode == 87) {
-        shipGroup.position.z -= ySpeed;
+        shipGroup.translateZ(-ySpeed);
     //S, hacia abajo
     } else if (keyCode == 40 || keyCode == 83) {
-        shipGroup.position.z += ySpeed;
+        shipGroup.translateZ(ySpeed);
     //A, izquierda
     } else if (keyCode == 65 || keyCode == 37) {
         //shipGroup.position.x -= xSpeed;
@@ -386,3 +386,7 @@ const onDocumentPointerDown = (event) =>{
 
     //console.log(mouse.x); 
 }
+
+const shipMovementHandler = (xRot, yRot, zRot, direction) => {
+  
+};
