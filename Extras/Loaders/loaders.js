@@ -35,7 +35,10 @@ const asteroideS = {
   obj: '../../models/obj/asteroid/Asteroid_3_LOW_MODEL_.obj',
   mtl: '../../models/obj/asteroid/Asteroid_3_LOW_MODEL_.mtl'
 }
-
+const ast = {
+  obj:'../../models/obj/A2.obj',
+  mtl:'../../models/obj/A2.mtl'
+}
 const objModel = {
   obj: '../../models/obj/space.obj',
    map : '../../models/fbx/spaceship/Intergalactic Spaceship_emi.jpg',
@@ -114,25 +117,25 @@ async function loadFBX (fbxModelUrl, configuration) {
     const roughmap = new THREE.TextureLoader().load(rough)
     let result = object
     spaceShip = result.children[0]
-    setVectorValue(spaceShip.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
-    setVectorValue(spaceShip.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
-    setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+    // setVectorValue(spaceShip.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
+    // setVectorValue(spaceShip.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
+    // setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
 
   //   result.animations.forEach(element =>{
   //     mixer[element.name] = new THREE.AnimationMixer(scene).clipAction(element, spaceShip)
   // })
   spaceShip.traverse(function (child) {
     if (child.isMesh) {
-        child.material = new THREE.MeshStandardMaterial
-        child.material.emissiveMap = emessive
-        child.material.normalMap = nmap
-        child.material.map = cmap
-        child.material.emissiveIntensity = 3
-        child.material.metalnessMap = metal
-        child.material.metalness = 2
-        child.material.emissive = {r:1, g:1, b:1}
-        child.material.aoMap = aomap
-        child.material.roughnessMap = roughmap
+        // child.material = new THREE.MeshStandardMaterial
+        // child.material.emissiveMap = emessive
+        // child.material.normalMap = nmap
+        // child.material.map = cmap
+        // child.material.emissiveIntensity = 3
+        // child.material.metalnessMap = metal
+        // child.material.metalness = 2
+        // child.material.emissive = {r:1, g:1, b:1}
+        // child.material.aoMap = aomap
+        // child.material.roughnessMap = roughmap
 
         // child.material.specularMap = specmap
 
@@ -183,9 +186,9 @@ async function loadGLTF (gltfModelUrl, configuration) {
 
     console.log(result)
 
-    // setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 10))
-    // setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
-    // setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+    setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 10))
+    setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
+    setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
 
     updateTextureEncoding(object)
     scene.add(object)
@@ -286,14 +289,14 @@ function createScene (canvas) {
 function loadObjects () {
   // load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(-8, 0, 0), scale: new THREE.Vector3(6,6,6), rotation: new THREE.Vector3(0, 1.58, 0) })
   // load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(4, 0, 0), scale: new THREE.Vector3(3, 3, 3), rotation: new THREE.Vector3(0, 1.58, 0) })
-  // load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(13, 0, 0), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 1.58, 0) })
+  load3dModel(ast.obj,ast.mtl,{ position: new THREE.Vector3(13, 0, 0), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 1.58, 0) })
 
   //loadGLTF('../../models/gltf/SpaceShip/ship.glb', { position: new THREE.Vector3(-10, 10, 0), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 3.1415, 0) })
 
   // loadGLTF('../../models/gltf/chalequito.glb', { position: new THREE.Vector3(10, -4, 0), scale: new THREE.Vector3(5, 5, 5), rotation: new THREE.Vector3(0, 3.1415, 0) })
 
-//   loadFBX('../../models/fbx/Robot/robot_idle.fbx', { position: new THREE.Vector3(0, -4, -20), scale: new THREE.Vector3(0.05, 0.05, 0.05) })
-  loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 2, 30), scale: new THREE.Vector3(1, 1, 1) })
+  loadFBX('../../models/Ass5.fbx', { position: new THREE.Vector3(0, -4, -20), scale: new THREE.Vector3(0.05, 0.05, 0.05) })
+  // loadGLTF('../../models/ast2.glb', { position: new THREE.Vector3(0, 2, 30), scale: new THREE.Vector3(1, 1, 1) })
   // loadFBX('../../models/fbx/spaceship/Intergalactic_Spaceship-(FBX 7.4 binary).fbx', { position: new THREE.Vector3(0, 10, -20), scale: new THREE.Vector3(1, 1, 1) })
   // loadObj(objModel,{ position: new THREE.Vector3(0, 10, -20), scale: new THREE.Vector3(1, 1, 1) })
 }

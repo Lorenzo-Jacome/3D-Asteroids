@@ -19,9 +19,11 @@ let renderer = null, scene = null, camera = null, orbitControls = null;
 let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
 let animation = null, bullet = [], bulletBase = null;
 let asteroideGArray = {};
+let astG = null
 const textureEncoding = 'sRGB'
 const stars = '../images/stars.jpg'
-
+let shipBB = null
+let astBB = null;
 // para el control de la velocidad del movimiento de la nave
 let xSpeed = 2;
 let ySpeed = 2;
@@ -110,7 +112,13 @@ async function loadGLTF (gltfModelUrl, configuration) {
      setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
 
     updateTextureEncoding(spaceShip)
+      //shipBB = new THREE.Sphere(mesh.position, mesh.geometry.boundingSphere.radius)
+      shipBB = new THREE.BoxHelper(spaceShip, 0x00ff00)
+      shipBB.update()
+      shipBB.visible = true
     shipGroup.add(spaceShip)
+    shipGroup.add(shipBB)
+    console.log(shipBB)
 
   } catch (err) {
     console.error(err)
@@ -157,7 +165,15 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
       setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
       setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
   
+      let mesh = object.children[0]
+      astG = object
+      astBB = new THREE.BoxHelper(object, 0x00f00)
+      astBB.update()
+      astBB.visible = true
+      console.log("as", astBB)
       scene.add(object)
+      scene.add(astBB)
+
 
     } catch (err) {
       console.log('Error loading 3d Model:', err)
@@ -235,6 +251,15 @@ function update()
       //console.log(mouse.x);
       shipGroup.rotation.x += (mouse.y / 80);
   }
+  //console.log(spaceShip)
+  if (astBB && shipBB){
+  let shipBox = new THREE.Box3().setFromObject(spaceShip)
+  let astBox = new THREE.Box3().setFromObject(astG)
+  if (astBox.intersectsBox(shipBox)){
+    console.log("Collision")
+  }
+  }
+  
     
 }
 
@@ -246,8 +271,8 @@ function endGame(){
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 function loadObjects () {
      load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
-     load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
-     load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
+     //load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
+     //load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
      loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 10, -150), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
      loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
 
@@ -256,7 +281,11 @@ function loadObjects () {
 // funcion de prueba para crear asteroidesG, no jalo, preguntar20
 function create_asteroideG(){
     asteroideGArray[0] = load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(1,1,1), rotation: new THREE.Vector3(0, 0, 0) })
-    scene.add(asteroideGArray[0]);
+  as = asteroideGArray[0]
+    as.computeBoundingSphere();
+    bb = new THREE.Sphere(as.position, as.boundingSphere.radius)
+
+    //scene.add(asteroideGArray[0]);
 }
 
 
