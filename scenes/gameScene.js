@@ -15,19 +15,22 @@ const DRACO_LOADER = new DRACOLoader(MANAGER).setDecoderPath('../../libs/three.j
 const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.js/libs/basis/')
 
 // depende lo desarrollado, eliminar el orbitControls
-let renderer = null, scene = null, camera = null, orbitControls = null;
-let spaceShip = null, laser = null, score = 0, shipGroup = null, cameraGroup = null;
-let animation = null, bullet = [], bulletBase = null;
+let renderer = null, scene = null, camera = null;
+let spaceShip = null, score = 0, shipGroup = null, cameraGroup = null;
+let animation = null, bullet = [], bulletBase = null, loopAnimation = true, cross = null;
+let bulletEnd = [];
 let asteroideGArray = {};
 let astG = null
 const textureEncoding = 'sRGB'
-const stars = '../images/stars.jpg'
+//const stars = '../images/stars.jpg'
 let shipBB = null
 let astBB = null;
 // para el control de la velocidad del movimiento de la nave
 let xSpeed = 2;
 let ySpeed = 2;
 let zSpeed = 2;
+
+let bulletDuration = 25;
 
 // control de vidas
 let lifesCounter = 3;
@@ -74,15 +77,15 @@ function setVectorValue(vector, configuration, property, initialValues)
         }
     }
 
-    console.log("setting:", property, "with", initialValues);
+    //console.log("setting:", property, "with", initialValues);
     vector.set(initialValues.x, initialValues.y, initialValues.z);
 }
 
 // solo funciona para la nave espacial ya que lo guardamos en spaceShip
 async function loadFBX(fbxModelUrl, configuration)
 {
-  console.log("imprimiendo en consola ahora")
-  console.log(fbxModelUrl)
+  //console.log("imprimiendo en consola ahora")
+  //console.log(fbxModelUrl)
     try{
         let object = await new FBXLoader().loadAsync(fbxModelUrl);
         setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0,0,0));
@@ -118,13 +121,23 @@ async function loadGLTF (gltfModelUrl, configuration) {
       shipBB.visible = true
     shipGroup.add(spaceShip)
     shipGroup.add(shipBB)
-    console.log(shipBB)
+    //console.log(shipBB)
 
   } catch (err) {
     console.error(err)
   }
 }
 
+function create_bullet_base(){
+  //const geometry = new THREE.CapsuleGeometry( 1, 5, 1, 10 );
+  const geometry = new THREE.ConeGeometry( 2, 8, 6 );
+  const material = new THREE.MeshBasicMaterial({ color:0x00ff00 });
+  bulletBase = new THREE.Mesh( geometry,material );
+  bulletBase.scale.set(0.5, 0.5, 0.5)
+
+}
+
+//ya no se utiliza porque mejor carge un geometry sencillo como balla
 async function loadGLTFBullet (gltfModelUrl, configuration) {
   try {
     const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
@@ -170,7 +183,7 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
       astBB = new THREE.BoxHelper(object, 0x00f00)
       astBB.update()
       astBB.visible = true
-      console.log("as", astBB)
+      //console.log("as", astBB)
       scene.add(object)
       scene.add(astBB)
 
@@ -185,11 +198,40 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     const deltat = now - currentTime
     currentTime = now
 
+    //preguntar quien puso esto y para que es
     if (mixer[animation] && spaceShip) {
      mixer.update(deltat * 0.001)
      mixer[animation].getMixer().update(TextureEndeltat * 0.00002)
     }
+
+    if (bullet.length != 0){
+      //activa movimiento de bala
+      bulletUpdate();
+      KF.update();
+      //deleteBullets con tiempo de duracion lo que se tarda en llegar 
+      // al maximo de distancia
+      deleteBullet();
+    }
+    
 }
+
+
+function deleteBullet(){
+  //tratar de optimizar
+  for(let i = 0; i < bullet.length; i++){
+    //console.log(bulletEnd[i][0])
+    if (Math.abs(bullet[i].position.x - bulletEnd[i].x) < 1 && 
+    Math.abs(bullet[i].position.y == bulletEnd[i].y) < 1 &&
+    Math.abs(bullet[i].position.z == bulletEnd[i].z) < 1 ){
+        bullet[0].parent.remove(bullet[0])
+        console.log("delete bullet")
+        bullet.shift();
+        bulletEnd.shift();
+      }
+  }
+}
+
+
 function updateTextureEncoding (object) {
     const encoding = textureEncoding === 'sRGB'
       ? THREE.sRGBEncoding
@@ -219,13 +261,6 @@ function update()
 
     animate();
 
-    //console.log("posicion en x: "+shipGroup.rotation.x)
-    //console.log("posicion en y: "+shipGroup.rotation.y)
-    //console.log("posicion en z: "+shipGroup.rotation.z)
-
-    // Update the camera controller, probablemente se elimine
-    //orbitControls.update();
-
     //mostrar o eliminar los coreazones de vida
     switch (lifesCounter) {
         case 2:
@@ -241,6 +276,7 @@ function update()
         default:
             break;
     }
+
 
   if(mouse.x > 0.1 || mouse.x < -0.1){
       //console.log(mouse.x);
@@ -270,12 +306,13 @@ function endGame(){
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 function loadObjects () {
-     load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 20, -100), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+     load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
-     loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 10, -150), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
-     loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, -100), scale: new THREE.Vector3(0.02, 0.02, 0.02),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
-
+     //loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
+     loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(0.015, 0.015, 0.015),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
+     //crear base de bala
+     create_bullet_base()
 }
 
 // funcion de prueba para crear asteroidesG, no jalo, preguntar20
@@ -312,15 +349,15 @@ function createScene(canvas)
     scene.background = texture;
 
 
-    camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 700 );
-    camera.position.set(0.01, 20, 30);
-
+    camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 2000 );
+    camera.position.set(0.01, 10, 100);
+    camera.rotation.x -= 0.1;
     
     cameraGroup = new THREE.Object3D;
-    cameraGroup.position.set(0.01, 10, 2);
-    //camera.lookAt(0, 0, 0)
+    cameraGroup.position.set(0,0,0);
     cameraGroup.add(camera) 
 
+    create_gun_sight();
 
     //orbitControls = new OrbitControls(camera, renderer.domElement)
     //eliminar en algun momento
@@ -331,6 +368,7 @@ function createScene(canvas)
 
     shipGroup = new THREE.Object3D;
     shipGroup.add(cameraGroup)
+    shipGroup.position.set(0, 0, 0)
     scene.add( shipGroup )
 
     loadObjects();
@@ -374,17 +412,56 @@ document.addEventListener("keydown", onDocumentKeyDown, false);
 //lanzar balas, falta arreglar el tema de la direccion de las balas
 function throwBullet(){
   let bulletNew = bulletBase.clone();
+  let targetVector = new THREE.Vector3();
+  cross.getWorldPosition( targetVector );
   bulletNew.name = bullet.length;
-  bulletNew.position.set(shipGroup.position.x, shipGroup.position.y+5, shipGroup.position.z-100);
-  bulletNew.rotation.set(shipGroup.rotation.x, shipGroup.rotation.y, shipGroup.rotation.z)
-  bullet.push(bulletNew)
+  bulletNew.position.set(shipGroup.position.x, shipGroup.position.y, shipGroup.position.z);
+  bulletNew.rotation.set(shipGroup.rotation.x, shipGroup.rotation.y, shipGroup.rotation.z);
+
+  bulletEnd.push( targetVector )
+
   scene.add(bulletNew)
-  //console.log("posicion en x shipGroup: "+shipGroup.position.x)
-  //console.log("posicion en y shipGroup: "+shipGroup.position.y)
-  //console.log("posicion en z shipGroup: "+shipGroup.position.z)
-  //console.log("posicion en x spaceShip: "+spaceShip.position.x)
-  //console.log("posicion en y spaceShip: "+spaceShip.position.y)
-  //console.log("posicion en z spaceShip: "+spaceShip.position.z)
+  bullet.push(bulletNew)
+
+  console.log("de bulletnew")
+  console.log(bulletNew.rotation.x);
+  console.log(bulletNew.rotation.y);
+  console.log(bulletNew.rotation.z);
+  console.log("de ship group")
+  console.log(shipGroup.rotation.x);
+  console.log(shipGroup.rotation.y);
+  console.log(shipGroup.rotation.z);
+}
+
+function bulletUpdate(){
+  let counter = 0;
+  for (const oneBullet of bullet) {
+    let bulletAnimator = new KF.KeyFrameAnimator;
+    bulletAnimator.init({
+      interps:
+      [
+        {
+          keys:[0, 1],
+          values:[
+            { x: oneBullet.position.x, y: oneBullet.position.y ,z: oneBullet.position.z },
+            bulletEnd[counter]
+          ],
+          target:oneBullet.position
+        }
+      ],
+      loop: loopAnimation,
+      duration: bulletDuration,
+    })
+    bulletAnimator.start();
+    counter ++;
+  }
+}
+
+function create_gun_sight(){
+  const geometry = new THREE.OctahedronGeometry(4, 0)
+  cross = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0xFF0000 } ) );
+  cross.position.set(0, 0, -500);
+  cameraGroup.add(cross)
 }
 
 function onDocumentKeyDown(event) {
