@@ -18,8 +18,9 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.
 let renderer = null, scene = null, camera = null;
 let spaceShip = null, score = 0, shipGroup = null, cameraGroup = null;
 let animation = null, bullet = [], bulletBase = null, loopAnimation = true, cross = null;
+let asteroidG = null
 let bulletEnd = [];
-let asteroideGArray = {};
+let asteroideGArray = [];
 let astG = null
 const textureEncoding = 'sRGB'
 //const stars = '../images/stars.jpg'
@@ -99,6 +100,7 @@ async function loadFBX(fbxModelUrl, configuration)
         console.error( err );
     }
 }
+
 
 async function loadGLTF (gltfModelUrl, configuration) {
   try {
@@ -186,6 +188,7 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
       //console.log("as", astBB)
       scene.add(object)
       scene.add(astBB)
+      asteroideGArray.push(object)
 
 
     } catch (err) {
@@ -204,6 +207,15 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
      mixer[animation].getMixer().update(TextureEndeltat * 0.00002)
     }
 
+    for (const object of asteroideGArray){
+
+  let shipBox = new THREE.Box3().setFromObject(spaceShip)
+  let astBox = new THREE.Box3().setFromObject(object)
+  if (astBox.intersectsBox(shipBox)){
+    //console.log("Collision")
+    remScore(object)
+  }
+    }
     if (bullet.length != 0){
       //activa movimiento de bala
       bulletUpdate();
@@ -214,7 +226,22 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     }
     
 }
+function remScore(object){
+  const indx = asteroideGArray.indexOf(object)
+  asteroideGArray.splice(indx,1)
+  scene.remove(object)
+  lifesCounter -= 1
+}
 
+function getRandomProperties(asteroid){
+
+}
+
+function createAsteroids(asteroid){
+  copia = asteroid.clone()
+  scene.add(copia)
+  asteroideGArray.push(copia)
+}
 
 function deleteBullet(){
   //tratar de optimizar
@@ -288,13 +315,13 @@ function update()
       shipGroup.rotation.x += (mouse.y / 80);
   }
   //console.log(spaceShip)
-  if (astBB && shipBB){
-  let shipBox = new THREE.Box3().setFromObject(spaceShip)
-  let astBox = new THREE.Box3().setFromObject(astG)
-  if (astBox.intersectsBox(shipBox)){
-    console.log("Collision")
-  }
-  }
+  //if (astBB && shipBB){
+  //let shipBox = new THREE.Box3().setFromObject(spaceShip)
+  //let astBox = new THREE.Box3().setFromObject(astG)
+  //if (astBox.intersectsBox(shipBox)){
+    //console.log("Collision")
+  //}
+  //}
   
     
 }
@@ -306,7 +333,7 @@ function endGame(){
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 function loadObjects () {
-     load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+     asteroidG =load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
      //loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
