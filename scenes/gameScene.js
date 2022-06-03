@@ -174,7 +174,7 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
       const objLoader = new OBJLoader()
       objLoader.setMaterials(materials)
   
-      const object = await objLoader.loadAsync(objModelUrl)
+      let object = await objLoader.loadAsync(objModelUrl)
   
       setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
       setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
@@ -186,9 +186,12 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
       astBB.update()
       astBB.visible = true
       //console.log("as", astBB)
+      object = getRandomProperties(object)
       scene.add(object)
       scene.add(astBB)
+      console.log(object.position)
       asteroideGArray.push(object)
+      return object
 
 
     } catch (err) {
@@ -196,6 +199,7 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     }
   }
 
+const speed = .005;
   function animate () {
     const now = Date.now()
     const deltat = now - currentTime
@@ -208,7 +212,7 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
     }
 
     for (const object of asteroideGArray){
-
+      object.translateZ(speed*deltat)
   let shipBox = new THREE.Box3().setFromObject(spaceShip)
   let astBox = new THREE.Box3().setFromObject(object)
   if (astBox.intersectsBox(shipBox)){
@@ -234,11 +238,29 @@ function remScore(object){
 }
 
 function getRandomProperties(asteroid){
-
+  let shipPos = shipGroup.position
+  const minimo = 20;
+  const maximo = 60;
+  let posY = Math.random() * (maximo - (minimo)) + minimo
+  let posX = Math.random() * (maximo - (minimo)) + minimo
+  let posZ = Math.random() * (maximo - (minimo)) + minimo
+  const sx = Math.floor(Math.random() * 2)
+  const sy = Math.floor(Math.random() * 2)
+  const sz = Math.floor(Math.random() * 2)
+  sx ? posX : posX *= -1
+  sy ? posY : posY *= -1
+  sz ? posZ : posZ *= -1
+  posX = posX + shipPos.x
+  posY = posY + shipPos.y
+  posZ = posZ + shipPos.z
+  asteroid.position.set(posX,posY,posZ)
+  asteroid.rotation.set(posX,posY,posZ)
+  return asteroid;
 }
 
-function createAsteroids(asteroid){
-  copia = asteroid.clone()
+function createAsteroids(){
+  let copia = asteroidG.clone()
+  copia = getRandomProperties(copia)
   scene.add(copia)
   asteroideGArray.push(copia)
 }
@@ -284,6 +306,7 @@ function update()
 {
     requestAnimationFrame(function() { update(); });
     
+  //console.log(shipGroup.position)
     renderer.render( scene, camera );
 
     animate();
@@ -332,8 +355,8 @@ function endGame(){
 }
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
-function loadObjects () {
-     asteroidG =load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+async function loadObjects () {
+     asteroidG = await load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
      //loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
@@ -357,6 +380,7 @@ function createScene(canvas)
 {
     renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
 
+    setInterval(createAsteroids, 5000)
     renderer.setSize(canvas.width, canvas.height);
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
