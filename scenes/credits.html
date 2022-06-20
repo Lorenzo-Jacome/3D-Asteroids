@@ -170,25 +170,25 @@
             <div id="menu-background"></div>
             <img id="title-logo" src="../images/UI/3DASTEROIDS_LOGO.png" alt="Logo">
             <a href="/scenes/gameScene.html"><h1 id="start-button">START</h1></a>
-            <a href="/scenes/credits.html"><h2 id="credits-button">CREDITS</h2></a>
+            <a href="/scenes/mainMenu.html"><h2 id="credits-button">MENU</h2></a>
         </div>
         
         <div id="leaderboard">
             <div id="leader-background"></div>
-            <h3 id="leader-title">Leaderboard:</h3>
+            <h3 id="leader-title">Credits:</h3>
             <h5 id="leader-description-name">NAME</h5>
-            <h5 id="leader-description-points">POINTS</h5>
+            <h5 id="leader-description-points">ID</h5>
 
             <ul id="player-list">
-                <li>Abraham</li>
-                <li>Gerardo</li>
-                <li>Lorenzo</li>
+                <li>Abraham Garcia</li>
+                <li>Gerardo Angeles</li>
+                <li>Lorenzo Jacome</li>
             </ul>
 
             <ul id="points-list">
-                <li>320,666</li>
-                <li>117,343</li>
-                <li>69,420</li>
+                <li>A01023256</li>
+                <li>A01338190</li>
+                <li>A01026759</li>
             </ul>
         </div>
         
@@ -197,20 +197,5 @@
         </div>
     </body>
     <script>
-        let scoreBoard = JSON.parse(localStorage.getItem("scores"));
-
-        let keysSorted = Object.keys(scoreBoard).sort(function(a,b){return scoreBoard[a]-scoreBoard[b]});
-        console.log(scoreBoard);
-        console.log(keysSorted);
-
-        let playerList = "";
-        let pointsList = "";
-        for(let i = keysSorted.length - 1; i >= 0; i--){
-            playerList += "<li>" + keysSorted[i] + "</li>";
-            pointsList += "<li>" + scoreBoard[keysSorted[i]] + "</li>"
-        }
-
-        document.getElementById("player-list").innerHTML = playerList;
-        document.getElementById("points-list").innerHTML = pointsList;
     </script>
 </html>
