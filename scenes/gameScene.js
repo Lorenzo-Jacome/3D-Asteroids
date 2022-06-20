@@ -118,11 +118,11 @@ async function loadGLTF (gltfModelUrl, configuration) {
 
     updateTextureEncoding(spaceShip)
       //shipBB = new THREE.Sphere(mesh.position, mesh.geometry.boundingSphere.radius)
-      shipBB = new THREE.BoxHelper(spaceShip, 0x00ff00)
-      shipBB.update()
-      shipBB.visible = true
+      // shipBB = new THREE.BoxHelper(spaceShip, 0x00ff00)
+      //shipBB.update()
+      // shipBB.visible = true
     shipGroup.add(spaceShip)
-    shipGroup.add(shipBB)
+    // shipGroup.add(shipBB)
     //console.log(shipBB)
 
   } catch (err) {
@@ -182,9 +182,9 @@ async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
   
       let mesh = object.children[0]
       astG = object
-      astBB = new THREE.BoxHelper(object, 0x00f00)
-      astBB.update()
-      astBB.visible = true
+      // astBB = new THREE.BoxHelper(object, 0x00f00)
+      // astBB.update()
+      // astBB.visible = true
       //console.log("as", astBB)
       object = getRandomProperties(object)
       scene.add(object)
@@ -213,12 +213,20 @@ const speed = .005;
 
     for (const object of asteroideGArray){
       object.translateZ(speed*deltat)
-  let shipBox = new THREE.Box3().setFromObject(spaceShip)
-  let astBox = new THREE.Box3().setFromObject(object)
-  if (astBox.intersectsBox(shipBox)){
-    //console.log("Collision")
-    remScore(object)
-  }
+      let shipBox = new THREE.Box3().setFromObject(spaceShip)
+      let astBox = new THREE.Box3().setFromObject(object)
+      if (astBox.intersectsBox(shipBox)){
+        //console.log("Collision")
+        remScore(object)
+    }
+    for (const bull of bullet){
+      let bulletBox = new THREE.Box3().setFromObject(bull)
+      for (const ast of asteroideGArray){
+        let astBox = new THREE.Box3().setFromObject(ast)
+        if (astBox.intersectsBox(bulletBox)){
+          addScore(ast)
+        }
+      }
     }
     if (bullet.length != 0){
       //activa movimiento de bala
@@ -228,19 +236,22 @@ const speed = .005;
       // al maximo de distancia
       deleteBullet();
     }
+  } 
     
 }
+function addScore(asteroid) {
+  let mySize = asteroid.tamanio
+  score += scores[mySize]
+  console.log(mySize)
+  document.getElementById("scoreText").innerText=`Score: ${score.toString()}`;
+  console.log(score)
+  
+  const indx = asteroideGArray.indexOf(asteroid)
+  asteroideGArray.splice(indx,1)
+  scene.remove(asteroid)
+}
+
 function remScore(object){
-  let size = object.tamanio
-  if (size === "grande"){
-    console.log("grande")
-  }
-  else if(size=== "mediano"){
-    console.log("mediano")
-  }
-  else{
-    console.log("pequeño")
-  }
   const indx = asteroideGArray.indexOf(object)
   asteroideGArray.splice(indx,1)
   scene.remove(object)
@@ -373,7 +384,6 @@ function endGame(){
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 async function loadObjects () {
      asteroidG = await load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
-     asteroidG["tamanio"] = "Grande"
      console.log(asteroidG)
     //  asteroidM = await asteroidM.clone()
     //  asteroidS = await asteroidG.clone()
