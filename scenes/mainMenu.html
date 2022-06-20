@@ -196,4 +196,21 @@
             <canvas id="webglcanvas"></canvas>
         </div>
     </body>
+    <script>
+        let scoreBoard = JSON.parse(localStorage.getItem("scores"));
+
+        let keysSorted = Object.keys(scoreBoard).sort(function(a,b){return scoreBoard[a]-scoreBoard[b]});
+        console.log(scoreBoard);
+        console.log(keysSorted);
+
+        let playerList = "";
+        let pointsList = "";
+        for(let i = keysSorted.length - 1; i >= 0; i--){
+            playerList += "<li>" + keysSorted[i] + "</li>";
+            pointsList += "<li>" + scoreBoard[keysSorted[i]] + "</li>"
+        }
+
+        document.getElementById("player-list").innerHTML = playerList;
+        document.getElementById("points-list").innerHTML = pointsList;
+    </script>
 </html>

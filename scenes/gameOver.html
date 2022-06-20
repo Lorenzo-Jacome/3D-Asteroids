@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Game Over</title>
+
+        <style>
+        @font-face {
+            font-family: pixelfont;
+            src: url(../fonts/pixelfont.ttf);
+        }
+
+        @font-face {
+            font-family: arcade;
+            src: url(../fonts/arcade.ttf);
+        }
+
+            body {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+                font-size: 30px;
+                width:100vw;
+                height: 100vh;
+                margin: 0;
+                border: 0;
+                overflow: hidden; 
+                background-color: black;
+                color: white;
+            }
+            
+            .sort-line{
+                display: flex;
+                flex-direction: row;
+            }
+
+            .title-display{
+                font-family: "arcade";
+            }
+
+            .param-display{
+                font-family: "pixelfont";
+                background-color: black;
+                color: white;
+                padding-left: 20px;
+
+                border: none;
+                background-color: transparent;
+                resize: none;
+                outline: none;
+
+                font-size: 30px;
+            }
+
+            .form-style{
+                margin: 50px;
+            }
+
+            #game-over{
+                font-family: "arcade";
+                color: red;
+            }
+
+            .button {
+                background-color: red; 
+                border: none;
+                color: white;
+                padding: 15px 32px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 30px;
+                font-family: "arcade";
+            }
+        </style>
+    </head>
+    <body>
+        <form class="form-style">
+            <h1 id="game-over">GAME OVER</h1>
+            <div class="sort-line">
+                <h5 class="title-display">Your name:</h5>
+                <input class="param-display" type="text" id="name">
+            </div>
+            <div class="sort-line">
+                <h5 class="title-display">Your score:</h5>
+                <h5 class="param-display" id="scoreDisplay"></h5>
+            </div>
+            <input class="button" type="button" value="Ok" onclick="scoreHandler()">
+        </form>
+    </body>
+
+    <script>
+        console.log(localStorage.getItem("score"));
+        let obtainedScore = localStorage.getItem("score");
+        document.getElementById("scoreDisplay").innerHTML = localStorage.getItem("score");
+
+        const scoreHandler = () => {
+            if(localStorage.getItem("scores") == null){
+                localStorage.setItem("scores", JSON.stringify({}));
+            }
+
+            let inputName = document.getElementById("name").value;
+            let currentBoard = JSON.parse(localStorage.getItem("scores"));
+            currentBoard[inputName] = obtainedScore;
+            localStorage.setItem("scores", JSON.stringify(currentBoard));
+
+            window.location.replace("http://127.0.0.1:5500/scenes/mainMenu.html");
+        };
+    </script>
+</html>

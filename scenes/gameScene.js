@@ -378,7 +378,8 @@ function update()
 
 // funcion de terminar el juego
 function endGame(){
-
+  window.location.replace("http://127.0.0.1:5500/scenes/gameOver.html");
+  localStorage.setItem("score", score);
 }
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
