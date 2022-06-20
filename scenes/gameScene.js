@@ -18,11 +18,13 @@ const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.
 let renderer = null, scene = null, camera = null;
 let spaceShip = null, score = 0, shipGroup = null, cameraGroup = null;
 let animation = null, bullet = [], bulletBase = null, loopAnimation = true, cross = null;
-let asteroidG = null
+let asteroidG = null;
 let bulletEnd = [];
 let asteroideGArray = [];
 let astG = null
 const textureEncoding = 'sRGB'
+let tamanios = {"grande":new THREE.Vector3(6,6,6), "mediano":new THREE.Vector3(2,2,2), "chico":new THREE.Vector3(1,1,1)}
+let scores = {"grande":50, "mediano":75, "chico":100}
 //const stars = '../images/stars.jpg'
 let shipBB = null
 let astBB = null;
@@ -61,8 +63,6 @@ let currentTime = Date.now();
 
 //cargamos background
 const spaceMapUrl = "../images/space2.jpeg"
-
-
 
 // para cargar objetos en la escena
 // obtenido del ejemplo del profe
@@ -231,6 +231,16 @@ const speed = .005;
     
 }
 function remScore(object){
+  let size = object.tamanio
+  if (size === "grande"){
+    console.log("grande")
+  }
+  else if(size=== "mediano"){
+    console.log("mediano")
+  }
+  else{
+    console.log("pequeño")
+  }
   const indx = asteroideGArray.indexOf(object)
   asteroideGArray.splice(indx,1)
   scene.remove(object)
@@ -238,6 +248,11 @@ function remScore(object){
 }
 
 function getRandomProperties(asteroid){
+  const sizePick = Math.floor(Math.random() * 3)
+  const mySize = Object.keys(tamanios)[sizePick]
+  //console.log(tamanios[mySize])
+  setVectorValue(asteroid.scale, tamanios, mySize)
+  asteroid["tamanio"] = mySize
   let shipPos = shipGroup.position
   const minimo = 20;
   const maximo = 60;
@@ -255,6 +270,7 @@ function getRandomProperties(asteroid){
   posZ = posZ + shipPos.z
   asteroid.position.set(posX,posY,posZ)
   asteroid.rotation.set(posX,posY,posZ)
+  console.log(asteroid.scale)
   return asteroid;
 }
 
@@ -357,6 +373,10 @@ function endGame(){
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 async function loadObjects () {
      asteroidG = await load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+     asteroidG["tamanio"] = "Grande"
+     console.log(asteroidG)
+    //  asteroidM = await asteroidM.clone()
+    //  asteroidS = await asteroidG.clone()
      //load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
      //load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
      //loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
