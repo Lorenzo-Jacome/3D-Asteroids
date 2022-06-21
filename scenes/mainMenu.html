@@ -62,12 +62,22 @@
 
             font-family: arcade;
         }
+        #sound{
+            position: absolute;
+
+            top: 440px;
+            left: 175px;
+
+            width: 400px;
+
+            font-family: arcade;
+        }
 
         #menu-background{
             position: absolute;
             background-color: rgba(92, 38, 134, 0.5);
             width: 400px;
-            height: 400px;
+            height: 500px;
 
             border-style: solid;
             border-color: #36CDC4;
@@ -171,6 +181,7 @@
             <img id="title-logo" src="../images/UI/3DASTEROIDS_LOGO.png" alt="Logo">
             <a href="/scenes/gameScene.html"><h1 id="start-button">START</h1></a>
             <a href="/scenes/credits.html"><h2 id="credits-button">CREDITS</h2></a>
+            <a href="#" id="mysound"><h2 id="sound">SOUND</h2></a>
         </div>
         
         <div id="leaderboard">
@@ -197,6 +208,7 @@
         </div>
     </body>
     <script>
+
         let scoreBoard = JSON.parse(localStorage.getItem("scores"));
 
         let keysSorted = Object.keys(scoreBoard).sort(function(a,b){return scoreBoard[a]-scoreBoard[b]});
@@ -209,7 +221,7 @@
             playerList += "<li>" + keysSorted[i] + "</li>";
             pointsList += "<li>" + scoreBoard[keysSorted[i]] + "</li>"
         }
-
+        console.log(sound)
         document.getElementById("player-list").innerHTML = playerList;
         document.getElementById("points-list").innerHTML = pointsList;
     </script>

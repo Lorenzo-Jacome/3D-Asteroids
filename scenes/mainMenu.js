@@ -1,7 +1,7 @@
 import * as THREE from '../libs/three.module.js'
 
 let renderer = null, scene = null, camera = null, root = null;
-
+let sound = null
 let directionalLight = null, spotLight = null, ambientLight = null;
 
 let cubes = [];
@@ -11,7 +11,7 @@ let errors = 0;
 
 const mapUrl = "../../images/checker_large.gif";
 let currentTime = Date.now();
-
+const mainSound = "../sound/main.mp3"
 function animate()
 {
     const now = Date.now();
@@ -23,11 +23,15 @@ function update()
 {
     requestAnimationFrame(function() { update(); });
     renderer.render( scene, camera );
+    if (document.getElementById('mysound').clicked == true){
+        console.log("hey")
+    }
     animate();
 }
 
 function createScene(canvas) 
 {
+    console.log(document.getElementById('mysound'))
     renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
 
     renderer.setSize(canvas.width, canvas.height);
@@ -36,6 +40,17 @@ function createScene(canvas)
 
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 4000 );
     camera.position.set(0, 15, 125);
+
+    const ambientListener = new THREE.AudioListener();
+    camera.add(ambientListener)
+    sound = new THREE.Audio(ambientListener)
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(mainSound, function(buffer){
+      sound.setBuffer(buffer)
+      sound.setLoop(true)
+      sound.setVolume(0.5)
+      sound.play()
+    })
     scene.add(camera);
     
     root = new THREE.Object3D;
@@ -86,10 +101,19 @@ function resize()
     camera.updateProjectionMatrix();
     renderer.setSize(canvas.width, canvas.height);
 }
+function playSound(){
+    console.log("Hey")
+    if(sound.isPlaying){
+        sound.stop()
+    }
+    else{
+        sound.play()
+    }
+}
 
 window.onload = () => {
-    main();
-    resize(); 
+    main(); 
+    resize();
 };
 
 window.addEventListener('resize', resize, false);

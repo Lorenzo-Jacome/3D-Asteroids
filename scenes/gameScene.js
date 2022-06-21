@@ -21,6 +21,7 @@ let animation = null, bullet = [], bulletBase = null, loopAnimation = true, cros
 let asteroidG = null;
 let bulletEnd = [];
 let asteroideGArray = [];
+let ambientListener = null, sound = null, shotS = null, collS = null, astS = null
 let astG = null
 const textureEncoding = 'sRGB'
 let tamanios = {"grande":new THREE.Vector3(6,6,6), "mediano":new THREE.Vector3(2,2,2), "chico":new THREE.Vector3(1,1,1)}
@@ -47,16 +48,10 @@ const asteroideG = {
     mtl: '../models/obj/asteroid/Asteroid_1_LOW_MODEL_.mtl'
   
   }
-  const asteroideM = {
-    obj: '../models/obj/asteroid/Asteroid_2_LOW_MODEL_.obj',
-    mtl: '../models/obj/asteroid/Asteroid_2_LOW_MODEL_.mtl'
-    
-  }
-  const asteroideS = {
-    obj: '../models/obj/asteroid/Asteroid_3_LOW_MODEL_.obj',
-    mtl: '../models/obj/asteroid/Asteroid_3_LOW_MODEL_.mtl'
-  }
-
+const ambientSound = '../sound/ambient.mp3'
+const shotSound = '../sound/shot.mp3'  
+const collSound = '../sound/collision.mp3'
+const astSound = '../sound/asteroid.mp3'
 let ambientLight = null;
 const mixer = {}
 let currentTime = Date.now();
@@ -216,6 +211,11 @@ const speed = .005;
       let shipBox = new THREE.Box3().setFromObject(spaceShip)
       let astBox = new THREE.Box3().setFromObject(object)
       if (astBox.intersectsBox(shipBox)){
+        if(collS.isPlaying){
+          collS.stop()
+        }
+        collS.play();
+        
         //console.log("Collision")
         remScore(object)
     }
@@ -224,6 +224,10 @@ const speed = .005;
       for (const ast of asteroideGArray){
         let astBox = new THREE.Box3().setFromObject(ast)
         if (astBox.intersectsBox(bulletBox)){
+          if(astS.isPlaying){
+            astS.stop();
+          }
+          astS.play();
           addScore(ast)
         }
       }
@@ -411,7 +415,7 @@ function createScene(canvas)
 {
     renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
 
-    setInterval(createAsteroids, 5000)
+    setInterval(createAsteroids, 500)
     renderer.setSize(canvas.width, canvas.height);
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -427,6 +431,7 @@ function createScene(canvas)
       '../images/cubemap/opcion1/backImage.png',
       '../images/cubemap/opcion1/frontImage.png',
     ]);
+    
 
     scene.background = texture;
 
@@ -434,7 +439,41 @@ function createScene(canvas)
     camera = new THREE.PerspectiveCamera( 45, canvas.width / canvas.height, 1, 2000 );
     camera.position.set(0.01, 10, 100);
     camera.rotation.x -= 0.1;
+
+    // Audios
+    ambientListener = new THREE.AudioListener();
+    camera.add(ambientListener)
+    sound = new THREE.Audio(ambientListener)
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load(ambientSound, function(buffer){
+      sound.setBuffer(buffer)
+      sound.setLoop(true)
+      sound.setVolume(0.5)
+      sound.play()
+    })
+
+    shotS = new THREE.Audio(ambientListener);
+    audioLoader.load(shotSound, function(buffer){
+      shotS.setBuffer(buffer)
+      shotS.setLoop(false)
+      shotS.setVolume(0.3)
+    })
+
+    collS = new THREE.Audio(ambientListener);
+    audioLoader.load(collSound, function(buffer){
+      collS.setBuffer(buffer)
+      collS.setLoop(false)
+      collS.setVolume(0.6)
+    })
+    astS = new THREE.Audio(ambientListener);
+    audioLoader.load(astSound, function(buffer){
+      astS.setBuffer(buffer)
+      astS.setLoop(false)
+      astS.setVolume(0.6)
+    })
     
+
+
     cameraGroup = new THREE.Object3D;
     cameraGroup.position.set(0,0,0);
     cameraGroup.add(camera) 
@@ -563,6 +602,12 @@ function onDocumentKeyDown(event) {
         //shipGroup.position.x += xSpeed;
         shipGroup.rotation.z -= 0.1;
     } else if (keyCode == 32){
+      console.log(shotS)
+      if (shotS.isPlaying){
+        shotS.stop()
+      }
+      shotS.play();
+      
       throwBullet()
     }
 };
