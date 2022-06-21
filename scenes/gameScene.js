@@ -1,10 +1,8 @@
 //12 de mayo
 //documento de javascript con el funcionamiento de la escena de juego
 import * as THREE from '../../libs/three.js/three.module.js'
-import { OrbitControls } from '../../libs/three.js/controls/OrbitControls.js'
 import { OBJLoader } from '../../libs/three.js/loaders/OBJLoader.js'
 import { MTLLoader } from '../../libs/three.js/loaders/MTLLoader.js'
-import { FBXLoader } from '../../libs/three.js/loaders/FBXLoader.js'
 import { GLTFLoader } from '../../libs/three.js/loaders/GLTFLoader.js'
 import { KTX2Loader } from '../../libs/three.js/loaders/KTX2Loader.js'
 import { DRACOLoader } from '../../libs/three.js/loaders/DRACOLoader.js'
@@ -14,55 +12,34 @@ const MANAGER = new THREE.LoadingManager()
 const DRACO_LOADER = new DRACOLoader(MANAGER).setDecoderPath('../../libs/three.js/libs/draco/gltf')
 const KTX2_LOADER = new KTX2Loader(MANAGER).setTranscoderPath('../../libs/three.js/libs/basis/')
 
-// depende lo desarrollado, eliminar el orbitControls
-let renderer = null, scene = null, camera = null;
-let spaceShip = null, score = 0, shipGroup = null, cameraGroup = null;
-let animation = null, bullet = [], bulletBase = null, loopAnimation = true, cross = null;
-let asteroidG = null;
-let bulletEnd = [];
-let asteroideGArray = [];
-let ambientListener = null, sound = null, shotS = null, collS = null, astS = null
-let astG = null
-const textureEncoding = 'sRGB'
-let tamanios = {"grande":new THREE.Vector3(6,6,6), "mediano":new THREE.Vector3(2,2,2), "chico":new THREE.Vector3(1,1,1)}
-let scores = {"grande":50, "mediano":75, "chico":100}
-//const stars = '../images/stars.jpg'
-let shipBB = null
-let astBB = null;
-// para el control de la velocidad del movimiento de la nave
-let xSpeed = 2;
-let ySpeed = 2;
-let zSpeed = 2;
+let renderer = null, scene = null, camera = null, score = 0, lifesCounter = 3, mouse = new THREE.Vector2(), ambientLight = null;// variables de escena
+let shipGroup = null, spaceShip = null, cameraGroup = null, cross = null, ySpeed = 2;                                           // variables de la nave
+let loopAnimation = true, bullet = [], bulletBase = null, bulletEnd = [], bulletDuration = 25;                                  // variables de balas
+let asteroidG = null, asteroideGArray = [];                                                                                     // variables de asteroides
+let tamanios = {"grande":new THREE.Vector3(6,6,6), "mediano":new THREE.Vector3(2,2,2), "chico":new THREE.Vector3(1,1,1)};       
+let scores = {"grande":50, "mediano":75, "chico":100};                                                       
+const speed = .005;                   
+let ambientListener = null, sound = null, shotS = null, collS = null, astS = null;                                              // variables de sonido
+const textureEncoding = 'sRGB'                                                                                                  // variables de loaders
 
-let bulletDuration = 25;
-
-// control de vidas
-let lifesCounter = 3;
-
-//Crear mouse:
-let mouse = new THREE.Vector2();
-
-//para crear asteroides
+// para crear asteroides
 const asteroideG = {
     obj: '../models/obj/asteroid/Asteroid_1_LOW_MODEL_.obj',
     mtl: '../models/obj/asteroid/Asteroid_1_LOW_MODEL_.mtl'
   
   }
+// para sonido
 const ambientSound = '../sound/ambient.mp3'
 const shotSound = '../sound/shot.mp3'  
 const collSound = '../sound/collision.mp3'
 const astSound = '../sound/asteroid.mp3'
-let ambientLight = null;
-const mixer = {}
+
+const mixer = {}                                                                                                                // si no se usa, eliminar
+
 let currentTime = Date.now();
 
-//cargamos background
-const spaceMapUrl = "../images/space2.jpeg"
-
 // para cargar objetos en la escena
-// obtenido del ejemplo del profe
-function setVectorValue(vector, configuration, property, initialValues)
-{
+function setVectorValue(vector, configuration, property, initialValues){
     if(configuration !== undefined)
     {
         if(property in configuration)
@@ -77,26 +54,7 @@ function setVectorValue(vector, configuration, property, initialValues)
     vector.set(initialValues.x, initialValues.y, initialValues.z);
 }
 
-// solo funciona para la nave espacial ya que lo guardamos en spaceShip
-async function loadFBX(fbxModelUrl, configuration)
-{
-  //console.log("imprimiendo en consola ahora")
-  //console.log(fbxModelUrl)
-    try{
-        let object = await new FBXLoader().loadAsync(fbxModelUrl);
-        setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0,0,0));
-        setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1));
-        setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0,0,0));
-        
-        scene.add(object)
-    }
-    catch(err)
-    {
-        console.error( err );
-    }
-}
-
-
+// cargar nave espacial
 async function loadGLTF (gltfModelUrl, configuration) {
   try {
     const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
@@ -104,53 +62,13 @@ async function loadGLTF (gltfModelUrl, configuration) {
 
     spaceShip = result.scene || result.scenes[0]
     spaceShip = spaceShip.children[0]
-    //console.log(object)
 
-    //console.log(result)
      setVectorValue(spaceShip.position, configuration, 'position')
      setVectorValue(spaceShip.scale, configuration, 'scale')
      setVectorValue(spaceShip.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
 
     updateTextureEncoding(spaceShip)
-      //shipBB = new THREE.Sphere(mesh.position, mesh.geometry.boundingSphere.radius)
-      // shipBB = new THREE.BoxHelper(spaceShip, 0x00ff00)
-      //shipBB.update()
-      // shipBB.visible = true
     shipGroup.add(spaceShip)
-    // shipGroup.add(shipBB)
-    //console.log(shipBB)
-
-  } catch (err) {
-    console.error(err)
-  }
-}
-
-function create_bullet_base(){
-  //const geometry = new THREE.CapsuleGeometry( 1, 5, 1, 10 );
-  const geometry = new THREE.ConeGeometry( 2, 8, 6 );
-  const material = new THREE.MeshBasicMaterial({ color:0x00ff00 });
-  bulletBase = new THREE.Mesh( geometry,material );
-  bulletBase.scale.set(0.5, 0.5, 0.5)
-
-}
-
-//ya no se utiliza porque mejor carge un geometry sencillo como balla
-async function loadGLTFBullet (gltfModelUrl, configuration) {
-  try {
-    const gltfLoader = new GLTFLoader(MANAGER).setDRACOLoader(DRACO_LOADER).setKTX2Loader(KTX2_LOADER.detectSupport(renderer)).setMeshoptDecoder(MeshoptDecoder)
-    const result = await gltfLoader.loadAsync(gltfModelUrl)
-
-    bulletBase = result.scene || result.scenes[0]
-    bulletBase = bulletBase.children[0]
-
-    //console.log(result)
-     setVectorValue(bulletBase.position, configuration, 'position')
-     setVectorValue(bulletBase.scale, configuration, 'scale')
-     setVectorValue(bulletBase.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
-
-    updateTextureEncoding(bulletBase)
-
-    //scene.add(bulletBase)
 
   } catch (err) {
     console.error(err)
@@ -159,109 +77,144 @@ async function loadGLTFBullet (gltfModelUrl, configuration) {
 
 // esta es para cargar los asteroides, se obtuvo del ejemplo del profe
 async function load3dModel (objModelUrl, mtlModelUrl, configuration) {
-    try {
-      const mtlLoader = new MTLLoader()
-  
-      const materials = await mtlLoader.loadAsync(mtlModelUrl)
-  
-      materials.preload()
-  
-      const objLoader = new OBJLoader()
-      objLoader.setMaterials(materials)
-  
-      let object = await objLoader.loadAsync(objModelUrl)
-  
-      setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
-      setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
-      setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
-  
-      let mesh = object.children[0]
-      astG = object
-      // astBB = new THREE.BoxHelper(object, 0x00f00)
-      // astBB.update()
-      // astBB.visible = true
-      //console.log("as", astBB)
-      object = getRandomProperties(object)
-      scene.add(object)
-      scene.add(astBB)
-      console.log(object.position)
-      asteroideGArray.push(object)
-      return object
+  try {
+    const mtlLoader = new MTLLoader()
+    const materials = await mtlLoader.loadAsync(mtlModelUrl)
 
+    materials.preload()
 
-    } catch (err) {
-      console.log('Error loading 3d Model:', err)
-    }
+    const objLoader = new OBJLoader()
+    objLoader.setMaterials(materials)
+
+    let object = await objLoader.loadAsync(objModelUrl)
+
+    setVectorValue(object.position, configuration, 'position', new THREE.Vector3(0, 0, 0))
+    setVectorValue(object.scale, configuration, 'scale', new THREE.Vector3(1, 1, 1))
+    setVectorValue(object.rotation, configuration, 'rotation', new THREE.Vector3(0, 0, 0))
+    object = getRandomProperties(object)
+    scene.add(object)
+    //console.log(object.position)
+    asteroideGArray.push(object)
+    return object
+
+  } catch (err) {
+    console.log('Error loading 3d Model:', err)
+  }
+}
+
+// necesaria para los loaders
+function updateTextureEncoding (object) {
+  const encoding = textureEncoding === 'sRGB'
+    ? THREE.sRGBEncoding
+    : THREE.LinearEncoding
+  traverseMaterials(object, (material) => {
+    if (material.map) material.map.encoding = encoding
+    if (material.emissiveMap) material.emissiveMap.encoding = encoding
+    if (material.map || material.emissiveMap) material.needsUpdate = true
+  })
+}
+
+// necesaria para los loaders
+function traverseMaterials (object, callback) {
+  object.traverse((node) => {
+    if (!node.isMesh) return
+    const materials = Array.isArray(node.material)
+      ? node.material
+      : [node.material]
+    materials.forEach(callback)
+  })
+}
+
+  // para crear la base de una bala
+function create_bullet_base(){
+  //const geometry = new THREE.CapsuleGeometry( 1, 5, 1, 10 );
+  const geometry = new THREE.ConeGeometry( 2, 8, 6 );
+  const material = new THREE.MeshBasicMaterial({ color:0x00ff00 });
+  bulletBase = new THREE.Mesh( geometry,material );
+  bulletBase.scale.set(0.5, 0.5, 0.5)
+}
+
+// crea un asteroide, es llamada en interval
+function createAsteroids(){
+  let copia = asteroidG.clone()
+  copia = getRandomProperties(copia)
+  scene.add(copia)
+  asteroideGArray.push(copia)
+}
+
+// funcion que anima todos los objetos en la escena
+function animate () {
+  const now = Date.now()
+  const deltat = now - currentTime
+  currentTime = now
+
+  // para evitar errores al inicio
+  if (asteroideGArray.length != 0 && spaceShip != null) {
+    collisionWithAsteroides(deltat)
   }
 
-const speed = .005;
-  function animate () {
-    const now = Date.now()
-    const deltat = now - currentTime
-    currentTime = now
+  // solo si balas existen
+  if (bullet.length != 0){
+    bulletUpdate();
+    KF.update();
+    deleteBullet();
+  }
+    
+}
 
-    //preguntar quien puso esto y para que es
-    if (mixer[animation] && spaceShip) {
-     mixer.update(deltat * 0.001)
-     mixer[animation].getMixer().update(TextureEndeltat * 0.00002)
-    }
+// revisa desde los asteroides que no choquen con ellos las balas, ni la nave
+function collisionWithAsteroides(deltat){
 
-    for (const object of asteroideGArray){
-      object.translateZ(speed*deltat)
-      let shipBox = new THREE.Box3().setFromObject(spaceShip)
-      let astBox = new THREE.Box3().setFromObject(object)
-      if (astBox.intersectsBox(shipBox)){
-        if(collS.isPlaying){
-          collS.stop()
-        }
-        collS.play();
-        
-        //console.log("Collision")
-        remScore(object)
+  for (const object of asteroideGArray){
+    object.translateZ(speed*deltat)
+    let shipBox = new THREE.Box3().setFromObject(spaceShip)
+    let astBox = new THREE.Box3().setFromObject(object)
+    if (astBox.intersectsBox(shipBox)){
+      if(collS.isPlaying){
+        collS.stop()
+      }
+      collS.play();
+      
+      //console.log("Collision")
+      remScore(object)
     }
     for (const bull of bullet){
       let bulletBox = new THREE.Box3().setFromObject(bull)
-      for (const ast of asteroideGArray){
-        let astBox = new THREE.Box3().setFromObject(ast)
-        if (astBox.intersectsBox(bulletBox)){
-          if(astS.isPlaying){
-            astS.stop();
-          }
-          astS.play();
-          addScore(ast)
+      if (astBox.intersectsBox(bulletBox)){
+        if(astS.isPlaying){
+          astS.stop();
         }
+        astS.play();
+        addScore(object)
       }
     }
-    if (bullet.length != 0){
-      //activa movimiento de bala
-      bulletUpdate();
-      KF.update();
-      //deleteBullets con tiempo de duracion lo que se tarda en llegar 
-      // al maximo de distancia
-      deleteBullet();
-    }
-  } 
-    
+  }
+
 }
+
+// agrega a score y elimina asteroide de arreglo y escena
 function addScore(asteroid) {
   let mySize = asteroid.tamanio
   score += scores[mySize]
-  console.log(mySize)
+  //console.log(mySize)
   document.getElementById("scoreText").innerText=`Score: ${score.toString()}`;
-  console.log(score)
+  //console.log(score)
   
   const indx = asteroideGArray.indexOf(asteroid)
   asteroideGArray.splice(indx,1)
   scene.remove(asteroid)
 }
 
+// resta a score y elimina asteroide de arreglo y escena
 function remScore(object){
   const indx = asteroideGArray.indexOf(object)
   asteroideGArray.splice(indx,1)
   scene.remove(object)
   lifesCounter -= 1
+  reviewLifes()
 }
 
+// genera propuedades random de un asteroide
 function getRandomProperties(asteroid){
   const sizePick = Math.floor(Math.random() * 3)
   const mySize = Object.keys(tamanios)[sizePick]
@@ -285,99 +238,66 @@ function getRandomProperties(asteroid){
   posZ = posZ + shipPos.z
   asteroid.position.set(posX,posY,posZ)
   asteroid.rotation.set(posX,posY,posZ)
-  console.log(asteroid.scale)
+  //console.log(asteroid.scale)
   return asteroid;
 }
 
-function createAsteroids(){
-  let copia = asteroidG.clone()
-  copia = getRandomProperties(copia)
-  scene.add(copia)
-  asteroideGArray.push(copia)
-}
-
+// elimina las balas que llegan a su destino maximo
 function deleteBullet(){
-  //tratar de optimizar
   for(let i = 0; i < bullet.length; i++){
-    //console.log(bulletEnd[i][0])
     if (Math.abs(bullet[i].position.x - bulletEnd[i].x) < 1 && 
     Math.abs(bullet[i].position.y == bulletEnd[i].y) < 1 &&
     Math.abs(bullet[i].position.z == bulletEnd[i].z) < 1 ){
         bullet[0].parent.remove(bullet[0])
-        console.log("delete bullet")
+        //console.log("delete bullet")
         bullet.shift();
         bulletEnd.shift();
       }
   }
 }
 
+// mostrar o eliminar los coreazones de vida
+function reviewLifes(){
+  switch (lifesCounter) {
+    case 2:
+        document.getElementById("thirdLife").style.display = "none";
+        break;
+    case 1:
+        document.getElementById("thirdLife").style.display = "none";
+        document.getElementById("secondLife").style.display = "none";
+        break;
+    case 0:
+        endGame();
+        break;
+    default:
+        break;
+}
+}
 
-function updateTextureEncoding (object) {
-    const encoding = textureEncoding === 'sRGB'
-      ? THREE.sRGBEncoding
-      : THREE.LinearEncoding
-    traverseMaterials(object, (material) => {
-      if (material.map) material.map.encoding = encoding
-      if (material.emissiveMap) material.emissiveMap.encoding = encoding
-      if (material.map || material.emissiveMap) material.needsUpdate = true
-    })
-  }
+// funcion que actualiza
+function update(){
+
+  requestAnimationFrame(function() { update(); });
+
+  renderer.render( scene, camera );
   
-  function traverseMaterials (object, callback) {
-    object.traverse((node) => {
-      if (!node.isMesh) return
-      const materials = Array.isArray(node.material)
-        ? node.material
-        : [node.material]
-      materials.forEach(callback)
-    })
-  }
+  mouseMovement();
 
-function update() 
-{
-    requestAnimationFrame(function() { update(); });
+  animate();
     
-  //console.log(shipGroup.position)
-    renderer.render( scene, camera );
+}
 
-    animate();
-
-    //mostrar o eliminar los coreazones de vida
-    switch (lifesCounter) {
-        case 2:
-            document.getElementById("thirdLife").style.display = "none";
-            break;
-        case 1:
-            document.getElementById("thirdLife").style.display = "none";
-            document.getElementById("secondLife").style.display = "none";
-            break;
-        case 0:
-            endGame();
-            break;
-        default:
-            break;
-    }
-
+function mouseMovement(){
 
   if(mouse.x > 0.1 || mouse.x < -0.1){
-      //console.log(mouse.x);
-      shipGroup.rotation.y -= (mouse.x / 80);
+    //console.log(mouse.x);
+    shipGroup.rotation.y -= (mouse.x / 80);
+  }
+  if(mouse.y > 0.1 || mouse.y < -0.1){
+    //console.log(mouse.x);
+    shipGroup.rotation.x += (mouse.y / 80);
   }
 
-  if(mouse.y > 0.1 || mouse.y < -0.1){
-      //console.log(mouse.x);
-      shipGroup.rotation.x += (mouse.y / 80);
-  }
-  //console.log(spaceShip)
-  //if (astBB && shipBB){
-  //let shipBox = new THREE.Box3().setFromObject(spaceShip)
-  //let astBox = new THREE.Box3().setFromObject(astG)
-  //if (astBox.intersectsBox(shipBox)){
-    //console.log("Collision")
-  //}
-  //}
-  
-    
 }
 
 // funcion de terminar el juego
@@ -388,26 +308,10 @@ function endGame(){
 
 // cargar todos los objetos a la escena, falta descomentar los asteroides
 async function loadObjects () {
-     asteroidG = await load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
-     console.log(asteroidG)
-    //  asteroidM = await asteroidM.clone()
-    //  asteroidS = await asteroidG.clone()
-     //load3dModel(asteroideM.obj,asteroideM.mtl,{ position: new THREE.Vector3(-20, 15, -100), scale: new THREE.Vector3(2, 2, 2), rotation: new THREE.Vector3(0, 0, 0) })
-     //load3dModel(asteroideS.obj,asteroideS.mtl,{ position: new THREE.Vector3(0, -20, -100), scale: new THREE.Vector3(1, 1, 1), rotation: new THREE.Vector3(0, 0, 0) })
-     //loadGLTFBullet('../../models/fbx/bullet/SA_45ACP_Example.glb',{ position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(5, 5, 5),  rotation: new THREE.Vector3(0, 0, 0)})
-     loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(0.015, 0.015, 0.015),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})
-     //crear base de bala
-     create_bullet_base()
-}
-
-// funcion de prueba para crear asteroidesG, no jalo, preguntar20
-function create_asteroideG(){
-    asteroideGArray[0] = load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(0, 0, -200), scale: new THREE.Vector3(1,1,1), rotation: new THREE.Vector3(0, 0, 0) })
-  as = asteroideGArray[0]
-    as.computeBoundingSphere();
-    bb = new THREE.Sphere(as.position, as.boundingSphere.radius)
-
-    //scene.add(asteroideGArray[0]);
+  loadGLTF('../../models/gltf/spaceShip.glb', { position: new THREE.Vector3(0, 0, 0), scale: new THREE.Vector3(0.015, 0.015, 0.015),  rotation: new THREE.Vector3((Math.PI * 1.5), (Math.PI * 1), 0)})   
+  asteroidG = await load3dModel(asteroideG.obj,asteroideG.mtl,{ position: new THREE.Vector3(40, 10, -30), scale: new THREE.Vector3(3,3,3), rotation: new THREE.Vector3(0, 0, 0) })
+  create_bullet_base()
+  //console.log(asteroidG)
 }
 
 
@@ -415,7 +319,7 @@ function createScene(canvas)
 {
     renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
 
-    setInterval(createAsteroids, 500)
+    setInterval(createAsteroids, 5000)
     renderer.setSize(canvas.width, canvas.height);
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -543,15 +447,6 @@ function throwBullet(){
 
   scene.add(bulletNew)
   bullet.push(bulletNew)
-
-  console.log("de bulletnew")
-  console.log(bulletNew.rotation.x);
-  console.log(bulletNew.rotation.y);
-  console.log(bulletNew.rotation.z);
-  console.log("de ship group")
-  console.log(shipGroup.rotation.x);
-  console.log(shipGroup.rotation.y);
-  console.log(shipGroup.rotation.z);
 }
 
 function bulletUpdate(){
@@ -602,7 +497,7 @@ function onDocumentKeyDown(event) {
         //shipGroup.position.x += xSpeed;
         shipGroup.rotation.z -= 0.1;
     } else if (keyCode == 32){
-      console.log(shotS)
+      //console.log(shotS)
       if (shotS.isPlaying){
         shotS.stop()
       }
@@ -619,7 +514,3 @@ const onDocumentPointerDown = (event) =>{
 
     //console.log(mouse.x); 
 }
-
-const shipMovementHandler = (xRot, yRot, zRot, direction) => {
-  
-};
