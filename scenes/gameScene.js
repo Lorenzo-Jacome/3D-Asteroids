@@ -18,7 +18,7 @@ let loopAnimation = true, bullet = [], bulletBase = null, bulletEnd = [], bullet
 let asteroidG = null, asteroideGArray = [];                                                                                     // variables de asteroides
 let tamanios = {"grande":new THREE.Vector3(6,6,6), "mediano":new THREE.Vector3(2,2,2), "chico":new THREE.Vector3(1,1,1)};       
 let scores = {"grande":50, "mediano":75, "chico":100};                                                       
-const speed = .005;                   
+const speed = .09;                   
 let ambientListener = null, sound = null, shotS = null, collS = null, astS = null;                                              // variables de sonido
 const textureEncoding = 'sRGB'                                                                                                  // variables de loaders
 
@@ -313,13 +313,18 @@ async function loadObjects () {
   create_bullet_base()
   //console.log(asteroidG)
 }
+function timeOutAsteroid(){
+  let asteroid = asteroideGArray.shift();
+  scene.remove(asteroid)
+}
 
 
 function createScene(canvas) 
 {
     renderer = new THREE.WebGLRenderer( { canvas: canvas, antialias: true } );
 
-    setInterval(createAsteroids, 5000)
+    setInterval(createAsteroids, 500)
+    setInterval(timeOutAsteroid, 2000)
     renderer.setSize(canvas.width, canvas.height);
 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;

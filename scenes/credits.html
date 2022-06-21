@@ -3,7 +3,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Main Menu</title>
 
-    <script type="module" src="mainMenu.js"></script>
+    <script defer type="module" src="mainMenu.js"></script>
 
     <style>
         body {
@@ -67,7 +67,7 @@
             position: absolute;
             background-color: rgba(92, 38, 134, 0.5);
             width: 400px;
-            height: 400px;
+            height: 500px;
 
             border-style: solid;
             border-color: #36CDC4;
@@ -77,6 +77,16 @@
             left: 95px;
 
             box-shadow: 0px 0px 20px 1px #0ff;
+        }
+        #sound{
+            position: absolute;
+
+            top: 440px;
+            left: 175px;
+
+            width: 400px;
+
+            font-family: arcade;
         }
 
         #leader-background{
@@ -171,6 +181,7 @@
             <img id="title-logo" src="../images/UI/3DASTEROIDS_LOGO.png" alt="Logo">
             <a href="/scenes/gameScene.html"><h1 id="start-button">START</h1></a>
             <a href="/scenes/mainMenu.html"><h2 id="credits-button">MENU</h2></a>
+            <a href="#" id="mysound"><h2 id="sound">SOUND</h2></a>
         </div>
         
         <div id="leaderboard">

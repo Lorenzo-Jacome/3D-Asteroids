@@ -2,12 +2,6 @@ import * as THREE from '../libs/three.module.js'
 
 let renderer = null, scene = null, camera = null, root = null;
 let sound = null
-let directionalLight = null, spotLight = null, ambientLight = null;
-
-let cubes = [];
-const badCubes = [];
-let score = 0;
-let errors = 0;
 
 const mapUrl = "../../images/checker_large.gif";
 let currentTime = Date.now();
@@ -23,11 +17,13 @@ function update()
 {
     requestAnimationFrame(function() { update(); });
     renderer.render( scene, camera );
-    if (document.getElementById('mysound').clicked == true){
-        console.log("hey")
-    }
+    document.querySelector('#mysound').addEventListener('click', playSound)
+    // if (document.getElementById('mysound').clicked == true){
+    //     console.log("hey")
+    // }
     animate();
 }
+
 
 function createScene(canvas) 
 {
@@ -49,7 +45,7 @@ function createScene(canvas)
       sound.setBuffer(buffer)
       sound.setLoop(true)
       sound.setVolume(0.5)
-      sound.play()
+      //sound.play()
     })
     scene.add(camera);
     
