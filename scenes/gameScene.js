@@ -378,7 +378,7 @@ function createScene(canvas)
     audioLoader.load(astSound, function(buffer){
       astS.setBuffer(buffer)
       astS.setLoop(false)
-      astS.setVolume(0.6)
+      astS.setVolume(0.2)
     })
     
 
